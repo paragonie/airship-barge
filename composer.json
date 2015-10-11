@@ -1,0 +1,27 @@
+{
+    "name": "paragonie/airship_barge",
+    "description": "Command Line Interface for developing Airship plugins",
+    "keywords": [
+        "airship", "blog", "CMS", "development"
+    ],
+    "license": "LGPL",
+    "authors": [
+            {
+                "name":     "Paragon Initiative Enterprises",
+                "email":    "security@paragonie.com",
+                "homepage": "https://paragonie.com"
+            }
+        ],
+    "support": {
+        "issues":   "https://github.com/paragonie/airship_barge/issues",
+        "email":    "info@paragonie.com",
+        "source":   "https://github.com/paragonie/airship_barge"
+    },
+    "require": {
+        "php": ">=7.0.0"
+    },
+    "require": {
+        "paragonie/halite": "^0.3.0",
+        "paragonie/random_compat": "^1.0"
+    }
+}
