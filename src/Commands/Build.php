@@ -8,7 +8,7 @@ class Build extends Base\Command
     public $essential = true;
     public $name = 'build';
     public $description = 'Build and Sign the Gear or Gadget in the current directory.';
-    public $display = 1;
+    public $display = 2;
     
     /**
      * Execute the build command
@@ -48,7 +48,7 @@ class Build extends Base\Command
     protected function buildGadget($path, $manifest, array $args = [])
     {
         // Step One -- Let's build our .phar file
-        $pharname = $manifest['vendor'].'-'.$manifest['name'].'.phar';
+        $pharname = $manifest['vendor'].'--'.$manifest['name'].'.phar';
         try {
             $phar = new \Phar(
                 $path.'/dist/'.$pharname,
