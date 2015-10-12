@@ -11,7 +11,7 @@ class Login extends Base\Command
     public $display = 2;
     
     /**
-     * Execute the help command
+     * Execute the login command
      *
      * @param array $args - CLI arguments
      * @echo
@@ -42,17 +42,5 @@ class Login extends Base\Command
             exit(255);
         }
         $this->config['vendors'][$username] = $result;
-    }
-    
-    /**
-     * Display the usage information for this command.
-     *
-     * @param array $args - CLI arguments
-     * @echo
-     * @return null
-     */
-    public function usageInfo(array $args = [])
-    {
-        
     }
 }

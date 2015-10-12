@@ -1,2 +1,0 @@
-# Basic Halite Usage
-

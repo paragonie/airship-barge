@@ -9,7 +9,7 @@ class Help extends Base\Command
     public $display = 1;
     public $showAll = true;
     public $name = 'Command Reference';
-    public $description = 'Display information about ASGard command line options.';
+    public $description = 'Display information about Barge command line options.';
     
     private $label = [
         'topCommands' => 'Essential/Popular Commands:',
@@ -286,9 +286,9 @@ EOBANNER;
         $TAB = str_repeat(' ', self::TAB_SIZE);
         $HTAB = str_repeat(' ', ceil(self::TAB_SIZE / 2));
         
-        echo "\ASGard Version ".
+        echo "Barge Version ".
             $this->c['yellow'].
-            \ParagonIE\AsgardClient\MetaData::VERSION.
+            \Airship\Barge\MetaData::VERSION.
             $this->c[''].
             "\n\n";
         
@@ -297,7 +297,7 @@ EOBANNER;
         echo $HTAB, "How to use this command:\n";
             echo $TAB, $this->c['cyan'], "barge ", $this->c[''], "\n";
             echo $TAB, $this->c['cyan'], "barge help", $this->c[''], "\n";
-            echo $TAB, $HTAB, "List all of the commands available to ASGard.";
+            echo $TAB, $HTAB, "List all of the commands available to barge.";
             echo "\n";
             
             echo $TAB, $this->c['cyan']."barge help [command]", $this->c[''], "\n";

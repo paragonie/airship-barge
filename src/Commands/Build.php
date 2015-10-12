@@ -39,18 +39,6 @@ class Build extends Base\Command
     }
     
     /**
-     * Display the usage information for this command.
-     *
-     * @param array $args - CLI arguments
-     * @echo
-     * @return null
-     */
-    public function usageInfo(array $args = [])
-    {
-        
-    }
-    
-    /**
      * Build a Gadget
      * 
      * @param string $path

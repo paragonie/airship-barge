@@ -18,9 +18,8 @@
         "source":   "https://github.com/paragonie/airship_barge"
     },
     "require": {
-        "php": ">=7.0.0"
-    },
-    "require": {
+        "php": "^7.0.0",
+        "bjeavons/zxcvbn-php": "*",
         "paragonie/halite": "^0.3.0",
         "paragonie/random_compat": "^1.0"
     }

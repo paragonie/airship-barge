@@ -38,12 +38,6 @@ abstract class Command
     abstract public function fire(array $args = []);
 
     /**
-     * Display command options
-     */
-    abstract public function usageInfo();
-
-
-    /**
      * Return the size of hte current terminal window
      *
      * @return array (int, int)
@@ -80,6 +74,23 @@ abstract class Command
             );
         }
         return $obj;
+    }
+    
+    /**
+     * Get a token for HTTP requests
+     * 
+     * @param string $vendor
+     */
+    public function getToken($vendor)
+    {
+        if (!isset($this->config['vendors'][$vendor])) {
+            return null;
+        }
+        if (empty($this->config['vendors'][$vendor]['token'])) {
+            return null;
+        }
+        $v =& $this->config['vendors'][$vendor]['token'];
+        return $v['selector'].':'.$v['validator'];
     }
     
     /**
@@ -179,4 +190,19 @@ abstract class Command
         return $sp[$i];
     }
     
+    /**
+     * Display the usage information for this command.
+     *
+     * @param array $args - CLI arguments
+     * @echo
+     * @return null
+     */
+    public function usageInfo(array $args = [])
+    {
+        $TAB = str_repeat(' ', self::TAB_SIZE);
+        $HTAB = str_repeat(' ', ceil(self::TAB_SIZE / 2));
+        
+        echo $HTAB, 'Airship / Barge - ', $this->name, "\n\n";
+        echo $TAB, $this->description, "\n\n";
+    }
 }
