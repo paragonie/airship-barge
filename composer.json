@@ -20,7 +20,7 @@
     "require": {
         "php": "^7.0.0",
         "bjeavons/zxcvbn-php": "*",
-        "paragonie/halite": "^0.3.0",
+        "paragonie/halite": "^0.5.0",
         "paragonie/random_compat": "^1.0"
     }
 }
