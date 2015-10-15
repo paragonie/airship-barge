@@ -6,7 +6,7 @@ use Airship\Barge as Base;
 class Init extends Base\Command
 {
     public $essential = true;
-    public $name = 'init';
+    public $name = 'Initialize';
     public $description = 'Create a new Airship Gadget project.';
     public $display = 1;
     
@@ -68,6 +68,7 @@ class Init extends Base\Command
             \json_encode(
                 [
                     'name' => $project_name,
+                    'version' => '0.0.1',
                     'description' => $description,
                     'blueprints' => [],
                     'landings' => [],
@@ -113,6 +114,7 @@ class Init extends Base\Command
                 '    \\Airship\\Engine\\Gears::extract(\'Blueprint\', \'BlueprintGear\', __NAMESPACE__);'."\n".
                 '}'."\n\n".
                 'class Example extends BlueprintGear'."\n".
+                '{'."\n".
                 '    public function getData()'."\n".
                 '    {'."\n".
                 '        return $this->db->run("SELECT * FROM table");'."\n".
@@ -127,6 +129,7 @@ class Init extends Base\Command
                 '    \\Airship\\Engine\\Gears::extract(\'Landing\', \'LandingGear\', __NAMESPACE__);'."\n".
                 '}'."\n\n".
                 'class Example extends LandingGear'."\n".
+                '{'."\n".
                 '    public function index()'."\n".
                 '    {'."\n".
                 '        $this->view("example", ["test" => "Hello world!"]);'."\n".

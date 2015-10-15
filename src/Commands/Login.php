@@ -6,7 +6,7 @@ use Airship\Barge as Base;
 class Login extends Base\Command
 {
     public $essential = false;
-    public $name = 'login';
+    public $name = 'Login';
     public $description = 'Authenticate to the Airship ATC service.';
     public $display = 2;
     

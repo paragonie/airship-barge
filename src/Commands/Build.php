@@ -9,7 +9,7 @@ use ParagonIE\Halite\Key;
 class Build extends Base\Command
 {
     public $essential = true;
-    public $name = 'build';
+    public $name = 'Build';
     public $description = 'Build and Sign the Gear or Gadget in the current directory.';
     public $display = 2;
     
@@ -110,7 +110,7 @@ class Build extends Base\Command
             exit(255);
         }
         
-        $password = $this->silentPrompt('Enter Password:');
+        $password = $this->silentPrompt('Enter Password for Signing Key:');
         
         $salt = \Sodium\hex2bin($skey['salt']);
         list($sign_secret, $sign_public) = Key::deriveFromPassword(
