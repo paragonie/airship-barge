@@ -102,6 +102,10 @@ class Init extends Base\Command
                 '\\Airship\\autoload(' . "\n".
                     "    " . '"\\\\'. $this->upperFirst($vendor) . '\\\\' . $this->upperFirst($project_name).'",' . "\n" .
                     "    " . '"phar://' . $vendor . '--' . $project_name . '.phar/src/'. '"' . "\n".
+                ');' . "\n\n" .
+                '\\Airship\\Engine\\Gadgets::loadCargo(' . "\n" .
+                    "    " . '"example",' . " // Cargo placeholder\n" .
+                    "    " . '"@' . $project_name . '"/example.twig' . "// Cargo path (relative to Lens)\n" .
                 ');' . "\n\n"
         );
         $ns = $this->upperFirst($vendor) . '\\' . $this->upperFirst($project_name);
@@ -111,7 +115,7 @@ class Init extends Base\Command
             $basepath.'/'.$project_name.'/src/Blueprint/Example.php',
             '<?php'."\n".
                 'namespace '.$ns.';'."\n\n".
-                'if (!\\class_exists(\'BlueprintGear\') {'."\n".
+                'if (!\\class_exists(\'BlueprintGear\')) {'."\n".
                 '    \\Airship\\Engine\\Gears::extract(\'Blueprint\', \'BlueprintGear\', __NAMESPACE__);'."\n".
                 '}'."\n\n".
                 'class Example extends BlueprintGear'."\n".
@@ -126,7 +130,7 @@ class Init extends Base\Command
             $basepath.'/'.$project_name.'/src/Landing/Example.php',
             '<?php'."\n".
                 'namespace '.$ns.';'."\n\n".
-                'if (!\\class_exists(\'LandingGear\') {'."\n".
+                'if (!\\class_exists(\'LandingGear\')) {'."\n".
                 '    \\Airship\\Engine\\Gears::extract(\'Landing\', \'LandingGear\', __NAMESPACE__);'."\n".
                 '}'."\n\n".
                 'class Example extends LandingGear'."\n".
