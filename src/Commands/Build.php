@@ -53,6 +53,12 @@ class Build extends Base\Command
         // Step One -- Let's build our .phar file
         $pharname = $manifest['vendor'].'--'.$manifest['name'].'.phar';
         try {
+            if (\file_exists($path.'/dist/'.$pharname)) {
+                \unlink($path.'/dist/'.$pharname);
+            }
+            if (\file_exists($path.'/dist/'.$pharname.'.ed25519.sig')) {
+                \unlink($path.'/dist/'.$pharname.'.ed25519.sig');
+            }
             $phar = new \Phar(
                 $path.'/dist/'.$pharname,
                 \FilesystemIterator::CURRENT_AS_FILEINFO | \FilesystemIterator::KEY_AS_FILENAME,
