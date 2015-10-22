@@ -54,6 +54,7 @@ class Init extends Base\Command
         }
         
         // Create the basic structure
+        \mkdir($basepath, 0755);
         \mkdir($basepath.'/'.$project_name, 0755);
         \mkdir($basepath.'/'.$project_name.'/dist/', 0755);
         \mkdir($basepath.'/'.$project_name.'/src/', 0755);

@@ -3,11 +3,11 @@ namespace Airship\Barge\Commands;
 
 use Airship\Barge as Base;
 
-class Push extends Base\Command
+class Release extends Base\Command
 {
     public $essential = true;
-    public $name = 'Push';
-    public $description = 'Push an update to your Gadget.';
+    public $name = 'Release';
+    public $description = 'Release an update to your Gadget.';
     public $display = 3;
     
     /**
