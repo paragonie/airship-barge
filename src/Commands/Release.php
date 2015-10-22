@@ -41,6 +41,13 @@ class Release extends Base\Command
         }
     }
     
+    /**
+     * Push the gadget to the skyport
+     * 
+     * @param string $path
+     * @param array $manifest
+     * @param array $args
+     */
     protected function pushGadget($path, array $manifest = [], array $args = [])
     {
         $pharname = $manifest['vendor'].'--'.$manifest['name'].'.phar';

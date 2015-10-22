@@ -61,9 +61,9 @@ class Build extends Base\Command
         } catch (\UnexpectedValueException $e) {
             die('Could not open my.phar');
         }
-        $phar->buildFromDirectory($path.'/src');
+        $phar->buildFromDirectory($path);
         $phar->setStub(
-            $phar->createDefaultStub('src/autoload.php', 'src/autoload.php')
+            $phar->createDefaultStub('autoload.php', 'autoload.php')
         );
         $phar->setMetadata($manifest);
         if (isset($this->config['vendors'][$manifest['vendor']])) {
