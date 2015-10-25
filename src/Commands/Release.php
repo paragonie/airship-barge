@@ -1,7 +1,9 @@
 <?php
 namespace Airship\Barge\Commands;
 
-use Airship\Barge as Base;
+use \Airship\Barge as Base;
+use \ParagonIE\Halite\Asymmetric\PublicKey;
+use \ParagonIE\Halite\File;
 
 class Release extends Base\Command
 {
@@ -31,12 +33,14 @@ class Release extends Base\Command
                 \file_get_contents($path.'/gadget.json'),
                 true
             );
-            if ($this->versionCheck($manifest)) {
-                $this->pushGadget(
-                    $path,
-                    $manifest,
-                    \array_slice($args, 1)
-                );
+            if ($this->signatureCheck($path, $manifest)) {
+                if ($this->versionCheck($manifest)) {
+                    $this->pushGadget(
+                        $path,
+                        $manifest,
+                        \array_slice($args, 1)
+                    );
+                }
             }
         }
     }
@@ -130,5 +134,28 @@ class Release extends Base\Command
         }
         // No latest version to be found? Just let it go through.
         return true;
+    }
+    
+    protected function signatureCheck($path, array $manifest = [])
+    {
+        $vendor_name = $manifest['vendor'];
+        $pharname = $vendor_name.'--'.$manifest['name'].'.phar';
+        $signature = \file_get_contents($path.'/dist/'.$pharname.'.ed25519.sig');
+        
+        $vendor =& $this->config['vendors'][$vendor_name];
+        $numKeys = \count($vendor['signing_keys']);
+        
+        $verified = false;
+        for ($i = 0; $i < $numKeys; ++$i) {
+            // signing key
+            $pubkey = new PublicKey(
+                \Sodium\hex2bin($vendor['signing_keys'][$i]['public_key']),
+                true
+            );
+            if (File::verifyFile($signature, $path.'/dist/'.$pharname, $pubkey)) {
+                $verified = true;
+            }
+        }
+        return $verified;
     }
 }
