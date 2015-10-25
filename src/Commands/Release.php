@@ -41,6 +41,8 @@ class Release extends Base\Command
                         \array_slice($args, 1)
                     );
                 }
+            } else {
+                echo 'Invalid signature. Did you forget to sign it?', "\n";
             }
         }
     }
