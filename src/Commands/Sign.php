@@ -51,11 +51,11 @@ class Sign extends Base\Command
         $vendor =& $this->config['vendors'][$vendor_name];
         $numKeys = \count($vendor['signing_keys']);
         if ($numKeys > 1) {
-            echo 'You have more than one signing key available.';
+            echo 'You have more than one signing key available.', "\n";
 
             $n = 1;
             $size = (int) \floor(\log($numKeys, 10));
-            $key_associations = $HTAB."ID\tPublic Key\n";
+            $key_associations = $HTAB."ID\t Public Key\n";
             foreach ($vendor['signing_keys'] as $sign_key) {
                 $_n = \str_pad($n, $size, ' ', STR_PAD_LEFT);
                 $key_associations .= $HTAB.$_n.$HTAB.$sign_key['public_key']."\n";
@@ -63,6 +63,7 @@ class Sign extends Base\Command
             }
             // Let's ascertain the user's key selection
             do {
+                echo $key_associations;
                 $choice = (int) $this->prompt('Enter the ID for the key you wish to use: ');
                 if ($choice < 1 || $choice > $numKeys) {
                     $choice = null;
