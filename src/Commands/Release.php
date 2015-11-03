@@ -56,7 +56,7 @@ class Release extends Base\Command
      */
     protected function pushGadget($path, array $manifest = [], array $args = [])
     {
-        $pharname = $manifest['vendor'].'--'.$manifest['name'].'.phar';
+        $pharname = $manifest['supplier'].'--'.$manifest['name'].'.phar';
         $signature = $pharname.'.ed25519.sig';
         
         $skyport = $this->getSkyport();
@@ -65,8 +65,8 @@ class Release extends Base\Command
             Base\HTTP::post(
                 $skyport.'upload',
                 [
-                    'token' => $this->getToken($manifest['vendor']),
-                    'vendor' => $manifest['vendor'],
+                    'token' => $this->getToken($manifest['supplier']),
+                    'supplier' => $manifest['supplier'],
                     'package' => $manifest['name'],
                     'version' => isset($manifest['version'])
                         ? $manifest['version']
@@ -99,9 +99,9 @@ class Release extends Base\Command
         
         $result = \json_decode(
             Base\HTTP::post(
-                $skyport.'upload/'.$manifest['vendor'].'/'.$manifest['name'],
+                $skyport.'upload/'.$manifest['supplier'].'/'.$manifest['name'],
                 [
-                    'token' => $this->getToken($manifest['vendor'])
+                    'token' => $this->getToken($manifest['supplier'])
                 ]
             )
         );
@@ -140,18 +140,18 @@ class Release extends Base\Command
     
     protected function signatureCheck($path, array $manifest = [])
     {
-        $vendor_name = $manifest['vendor'];
-        $pharname = $vendor_name.'--'.$manifest['name'].'.phar';
+        $supplier_name = $manifest['supplier'];
+        $pharname = $supplier_name.'--'.$manifest['name'].'.phar';
         $signature = \file_get_contents($path.'/dist/'.$pharname.'.ed25519.sig');
         
-        $vendor =& $this->config['vendors'][$vendor_name];
-        $numKeys = \count($vendor['signing_keys']);
+        $supplier =& $this->config['suppliers'][$supplier_name];
+        $numKeys = \count($supplier['signing_keys']);
         
         $verified = false;
         for ($i = 0; $i < $numKeys; ++$i) {
             // signing key
             $pubkey = new PublicKey(
-                \Sodium\hex2bin($vendor['signing_keys'][$i]['public_key']),
+                \Sodium\hex2bin($supplier['signing_keys'][$i]['public_key']),
                 true
             );
             if (File::verifyFile($signature, $path.'/dist/'.$pharname, $pubkey)) {

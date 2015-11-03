@@ -41,6 +41,6 @@ class Login extends Base\Command
             echo $result['error'], "\n";
             exit(255);
         }
-        $this->config['vendors'][$username] = $result;
+        $this->config['suppliers'][$username] = $result;
     }
 }

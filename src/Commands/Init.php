@@ -23,14 +23,14 @@ class Init extends Base\Command
             ? $args[0]
             : \getcwd();
         
-        if (count($this->config['vendors']) === 1) {
-            $vendor = \count($args) > 1
+        if (count($this->config['suppliers']) === 1) {
+            $supplier = \count($args) > 1
                 ? $args[1]
-                : \array_keys($this->config['vendors'])[0];
+                : \array_keys($this->config['suppliers'])[0];
         } else {
-            $vendor = \count($args) > 1
+            $supplier = \count($args) > 1
                 ? $args[1]
-                : $this->prompt("Please enter the name of the vendor: ");
+                : $this->prompt("Please enter the name of the supplier: ");
         }
         
         echo 'What is the name of your project?', "\n";
@@ -74,7 +74,7 @@ class Init extends Base\Command
                     'blueprints' => [],
                     'landings' => [],
                     'routes' => [],
-                    'vendor' => $vendor
+                    'supplier' => $supplier
                 ],
                 JSON_PRETTY_PRINT
             )
@@ -85,7 +85,7 @@ class Init extends Base\Command
             $basepath.'/'.$project_name.'/composer.json',
             \json_encode(
                 [
-                    'name' => $vendor.'/'.$project_name,
+                    'name' => $supplier.'/'.$project_name,
                     'description' => $description,
                     'require' => [
                         'php' => '^7.0.0'
@@ -100,15 +100,15 @@ class Init extends Base\Command
             $basepath.'/'.$project_name.'/autoload.php',
             '<?php' . "\n" .
                 '\\Airship\\autoload(' . "\n".
-                    "    " . '"\\\\'. $this->upperFirst($vendor) . '\\\\' . $this->upperFirst($project_name).'",' . "\n" .
-                    "    " . '"phar://' . $vendor . '--' . $project_name . '.phar/src/'. '"' . "\n".
+                    "    " . '"\\\\'. $this->upperFirst($supplier) . '\\\\' . $this->upperFirst($project_name).'",' . "\n" .
+                    "    " . '"phar://' . $supplier . '--' . $project_name . '.phar/src/'. '"' . "\n".
                 ');' . "\n\n" .
                 '\\Airship\\Engine\\Gadgets::loadCargo(' . "\n" .
                     "    " . '"example",' . " // Cargo placeholder\n" .
                     "    " . '"@' . $project_name . '"/example.twig' . "// Cargo path (relative to Lens)\n" .
                 ');' . "\n\n"
         );
-        $ns = $this->upperFirst($vendor) . '\\' . $this->upperFirst($project_name);
+        $ns = $this->upperFirst($supplier) . '\\' . $this->upperFirst($project_name);
         
         // Some example scripts
         \file_put_contents(

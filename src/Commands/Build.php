@@ -48,7 +48,7 @@ class Build extends Base\Command
     protected function buildGadget($path, $manifest, array $args = [])
     {
         // Step One -- Let's build our .phar file
-        $pharname = $manifest['vendor'].'--'.$manifest['name'].'.phar';
+        $pharname = $manifest['supplier'].'--'.$manifest['name'].'.phar';
         try {
             if (\file_exists($path.'/dist/'.$pharname)) {
                 \unlink($path.'/dist/'.$pharname);

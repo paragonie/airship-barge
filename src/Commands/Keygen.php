@@ -21,23 +21,23 @@ class Keygen extends Base\Command
      */
     public function fire(array $args = [])
     {
-        if (count($this->config['vendors']) === 1) {
-            $vendor = \count($args) > 0
+        if (count($this->config['suppliers']) === 1) {
+            $supplier = \count($args) > 0
                 ? $args[0]
-                : \array_keys($this->config['vendors'])[0];
+                : \array_keys($this->config['suppliers'])[0];
         } else {
-            $vendor = \count($args) > 0
+            $supplier = \count($args) > 0
                 ? $args[0]
-                : $this->prompt("Please enter the name of the vendor: ");
+                : $this->prompt("Please enter the name of the supplier: ");
         }
         
-        if (!\array_key_exists($vendor, $this->config['vendors'])) {
+        if (!\array_key_exists($supplier, $this->config['suppliers'])) {
             echo 'Please authenticate before attempting to generate a key.', "\n";
             echo 'Run this command: ', $this->c['yellow'], 'barge login', $this->c[''], "\n";
             exit(255);
         }
         
-        if (\count($this->config['vendors'][$vendor]['signing_keys']) === 0) {
+        if (\count($this->config['suppliers'][$supplier]['signing_keys']) === 0) {
             $key_type = 'master';
         } else {
             echo 'Please enter the key type you would like to generate (master, sub).', "\n";
@@ -101,7 +101,7 @@ class Keygen extends Base\Command
         }
         
         $zxcvbn = new Zxcvbn();
-        $userInput = $this->getZxcvbnKeywords($vendor);
+        $userInput = $this->getZxcvbnKeywords($supplier);
         
         // If we're storing in the cloud, our standards should be much higher.
         $min_score = $store_in_cloud ? 3 : 2;
@@ -144,24 +144,24 @@ class Keygen extends Base\Command
         ];
         
         // Save the configuration
-        $this->config['vendors'][$vendor]['signing_keys'][] = $new_key;
+        $this->config['suppliers'][$supplier]['signing_keys'][] = $new_key;
         
         // Send the public kay (and, maybe, the salt) to the Skyport.
-        $this->sendToSkyport($vendor, $new_key);
+        $this->sendToSkyport($supplier, $new_key);
     }
     
     /**
      * Send information about the new key to our Skyport
      * 
-     * @param string $vendor
+     * @param string $supplier
      * @param array $data
      */
-    protected function sendToSkyport($vendor, array $data = [])
+    protected function sendToSkyport($supplier, array $data = [])
     {
         $skyport = $this->getSkyport();
         
         $postData = [
-            'token' => $this->getToken($vendor),
+            'token' => $this->getToken($supplier),
             'publickey' => $data['public_key'],
             'type' => $data['type']
         ];
@@ -177,17 +177,17 @@ class Keygen extends Base\Command
     }
     
     /**
-     * Get a list of keywords (including vendor name) for Zxcvbn. This includes
-     * the vendor name and some keywords relevant to Airship to demote obvious
+     * Get a list of keywords (including supplier name) for Zxcvbn. This includes
+     * the supplier name and some keywords relevant to Airship to demote obvious
      * password choices.
      * 
-     * @param string $vendor_name
+     * @param string $supplier_name
      * @return array
      */
-    protected function getZxcvbnKeywords($vendor_name)
+    protected function getZxcvbnKeywords($supplier_name)
     {
         return [
-            $vendor_name,
+            $supplier_name,
             'airship',
             'barge',
             'flotilla',
