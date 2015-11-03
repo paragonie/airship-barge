@@ -42,21 +42,20 @@ class Sign extends Base\Command
     
     protected function signGadget($manifest, $path, array $args = [])
     {
-        $TAB = str_repeat(' ', self::TAB_SIZE);
         $HTAB = str_repeat(' ', ceil(self::TAB_SIZE / 2));
         
-        $pharname = $manifest['vendor'].'--'.$manifest['name'].'.phar';
-        $vendor_name = $manifest['vendor'];
+        $pharname = $manifest['supplier'].'--'.$manifest['name'].'.phar';
+        $supplier_name = $manifest['supplier'];
         
-        $vendor =& $this->config['vendors'][$vendor_name];
-        $numKeys = \count($vendor['signing_keys']);
+        $supplier =& $this->config['suppliers'][$supplier_name];
+        $numKeys = \count($supplier['signing_keys']);
         if ($numKeys > 1) {
             echo 'You have more than one signing key available.', "\n";
 
             $n = 1;
             $size = (int) \floor(\log($numKeys, 10));
             $key_associations = $HTAB."ID\t Public Key\n";
-            foreach ($vendor['signing_keys'] as $sign_key) {
+            foreach ($supplier['signing_keys'] as $sign_key) {
                 $_n = \str_pad($n, $size, ' ', STR_PAD_LEFT);
                 $key_associations .= $HTAB.$_n.$HTAB.$sign_key['public_key']."\n";
                 ++$n;
@@ -69,9 +68,9 @@ class Sign extends Base\Command
                     $choice = null;
                 }
             } while(empty($choice));
-            $skey = $vendor['signing_keys'][$choice - 1];
+            $skey = $supplier['signing_keys'][$choice - 1];
         } else {
-            $skey = $vendor['signing_keys'][0];
+            $skey = $supplier['signing_keys'][0];
         }
         
         if (empty($skey['salt'])) {
