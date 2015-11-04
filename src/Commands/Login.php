@@ -41,6 +41,23 @@ class Login extends Base\Command
             echo $result['error'], "\n";
             exit(255);
         }
-        $this->config['suppliers'][$username] = $result;
+        if (\array_key_exists($username, $this->config['suppliers'])) {
+            $this->config['suppliers'][$username]['token'] = $result['token'];
+            foreach ($result['signing_keys'] as $res_key) {
+                $found = false;
+                foreach ($this->config['suppliers'][$username]['signing_keys'] as $key) {
+                    if ($key['public_key'] === $res_key['public_key']) {
+                        $found = true;
+                        break;
+                    }
+                }
+                // If we loaded our salt into the skyport, import it:
+                if (!$found && isset($res_key['salt'])) {
+                    $this->config['suppliers'][$username]['signing_keys'][] = $res_key;
+                }
+            }
+        } else {
+            $this->config['suppliers'][$username] = $result;
+        }
     }
 }

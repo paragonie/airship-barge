@@ -79,17 +79,17 @@ abstract class Command
     /**
      * Get a token for HTTP requests
      * 
-     * @param string $vendor
+     * @param string $supplier
      */
-    public function getToken($vendor)
+    public function getToken($supplier)
     {
-        if (!isset($this->config['vendors'][$vendor])) {
+        if (!isset($this->config['suppliers'][$supplier])) {
             return null;
         }
-        if (empty($this->config['vendors'][$vendor]['token'])) {
+        if (empty($this->config['suppliers'][$supplier]['token'])) {
             return null;
         }
-        $v =& $this->config['vendors'][$vendor]['token'];
+        $v = $this->config['suppliers'][$supplier]['token'];
         return $v['selector'].':'.$v['validator'];
     }
     

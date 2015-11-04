@@ -19,6 +19,9 @@ class Init extends Base\Command
      */
     public function fire(array $args = [])
     {
+        if (!\array_key_exists('suppliers', $this->config)) {
+            die("Please login first!\n");
+        }
         $basepath = \count($args) > 0
             ? $args[0]
             : \getcwd();
@@ -54,7 +57,9 @@ class Init extends Base\Command
         }
         
         // Create the basic structure
-        \mkdir($basepath, 0755);
+        if (!\is_dir($basepath)) {
+            \mkdir($basepath, 0755);
+        }
         \mkdir($basepath.'/'.$project_name, 0755);
         \mkdir($basepath.'/'.$project_name.'/dist/', 0755);
         \mkdir($basepath.'/'.$project_name.'/src/', 0755);

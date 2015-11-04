@@ -2,7 +2,7 @@
 namespace Airship\Barge\Commands;
 
 use \Airship\Barge as Base;
-use \ParagonIE\Halite\Asymmetric\PublicKey;
+use \ParagonIE\Halite\Asymmetric\SignaturePublicKey;
 use \ParagonIE\Halite\File;
 
 class Release extends Base\Command
@@ -103,7 +103,8 @@ class Release extends Base\Command
                 [
                     'token' => $this->getToken($manifest['supplier'])
                 ]
-            )
+            ),
+            true
         );
         if (isset($result['latest'])) {
             if ($result['latest'] !== $manifest['version']) {
@@ -150,11 +151,11 @@ class Release extends Base\Command
         $verified = false;
         for ($i = 0; $i < $numKeys; ++$i) {
             // signing key
-            $pubkey = new PublicKey(
+            $pubkey = new SignaturePublicKey(
                 \Sodium\hex2bin($supplier['signing_keys'][$i]['public_key']),
                 true
             );
-            if (File::verifyFile($signature, $path.'/dist/'.$pharname, $pubkey)) {
+            if (File::verifyFile($path.'/dist/'.$pharname, $pubkey, $signature)) {
                 $verified = true;
             }
         }
