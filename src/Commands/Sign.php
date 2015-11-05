@@ -2,8 +2,13 @@
 namespace Airship\Barge\Commands;
 
 use \Airship\Barge as Base;
-use \ParagonIE\Halite\File;
-use \ParagonIE\Halite\Key;
+use \ParagonIE\Halite\{
+    File,
+    KeyFactory,
+    SignatureKeyPair,
+    Asymmetric\SignaturePublicKey,
+    Asymmetric\SignatureSecretKey
+};
 
 class Sign extends Base\Command
 {
@@ -40,7 +45,14 @@ class Sign extends Base\Command
         }
     }
     
-    protected function signGadget($manifest, $path, array $args = [])
+    /**
+     * Sign a gadget
+     * 
+     * @param array $manifest
+     * @param string $path
+     * @param array $args
+     */
+    protected function signGadget(array $manifest, string $path, array $args = [])
     {
         $HTAB = str_repeat(' ', ceil(self::TAB_SIZE / 2));
         
@@ -81,11 +93,10 @@ class Sign extends Base\Command
         $password = $this->silentPrompt('Enter Password for Signing Key:');
         
         $salt = \Sodium\hex2bin($skey['salt']);
-        list($sign_secret, $sign_public) = Key::deriveFromPassword(
-            $password,
-            $salt,
-            Key::CRYPTO_SIGN
-        );
+        $keypair = KeyFactory::deriveSignatureKeyPair($password, $salt);
+            $sign_secret = $keypair->getSecretKey();
+            $sign_public = $keypair->getPublicKey();
+        
         $pubkey = \Sodium\bin2hex($sign_public->get());
         if ($skey['public_key'] !== $pubkey) {
             echo 'Invalid password', "\n";
@@ -93,9 +104,13 @@ class Sign extends Base\Command
         }
         $signature = File::signFile($path.'/dist/'.$pharname, $sign_secret);
         
-        return \file_put_contents(
+        $res = \file_put_contents(
             $path.'/dist/'.$pharname.'.ed25519.sig',
             $signature
         );
+        if ($res !== false) {
+            echo 'Signed: ', $path, '/dist/', $pharname, '.ed25519.sig', "\n";
+            exit(0);
+        }
     }
 }

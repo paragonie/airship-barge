@@ -158,7 +158,7 @@ class Init extends Base\Command
      * @param string $string
      * @return string
      */
-    protected function upperFirst($string)
+    protected function upperFirst(string $string = '')
     {
         $string[0] = \strtoupper($string[0]);
         for ($i = 0; $i < \strlen($string); ++$i) {

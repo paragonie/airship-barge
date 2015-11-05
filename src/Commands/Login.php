@@ -56,6 +56,8 @@ class Login extends Base\Command
                     $this->config['suppliers'][$username]['signing_keys'][] = $res_key;
                 }
             }
+            echo 'Authentication successful', "\n";
+            exit(0);
         } else {
             $this->config['suppliers'][$username] = $result;
         }

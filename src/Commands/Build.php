@@ -45,8 +45,11 @@ class Build extends Base\Command
      * @param array $manifest
      * @param array $args
      */
-    protected function buildGadget($path, $manifest, array $args = [])
-    {
+    protected function buildGadget(
+        string $path,
+        array $manifest = [],
+        array $args = []
+    ) {
         // Step One -- Let's build our .phar file
         $pharname = $manifest['supplier'].'--'.$manifest['name'].'.phar';
         try {
@@ -62,7 +65,8 @@ class Build extends Base\Command
                 $pharname
             );
         } catch (\UnexpectedValueException $e) {
-            die('Could not open my.phar');
+            echo 'Could not open .phar', "\n";
+            exit(255); // Return an error flag
         }
         $phar->buildFromDirectory($path);
         $phar->setStub(
@@ -72,5 +76,6 @@ class Build extends Base\Command
         echo 'Gadget built.', "\n",
             $path.'/dist/'.$pharname, "\n",
             'Don\'t forget to sign it!', "\n";
+        exit(0); // Return a success flag
     }
 }

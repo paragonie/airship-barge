@@ -3,7 +3,7 @@ namespace Airship\Barge\Commands;
 
 use \Airship\Barge as Base;
 use \ZxcvbnPhp\Zxcvbn;
-use \ParagonIE\Halite\Key;
+use \ParagonIE\Halite\KeyFactory;
 
 class Keygen extends Base\Command
 {
@@ -125,11 +125,11 @@ class Keygen extends Base\Command
         
         echo 'Generating signing key...';
         
-        list(, $sign_public) = Key::deriveFromPassword(
+        $keypair = KeyFactory::deriveSignatureKeyPair(
             $password,
-            $salt,
-            Key::CRYPTO_SIGN
+            $salt
         );
+        $sign_public = $keypair->getPublicKey();
         echo 'DONE!', "\n";
         
         // Wipe the password from memory
@@ -156,8 +156,10 @@ class Keygen extends Base\Command
      * @param string $supplier
      * @param array $data
      */
-    protected function sendToSkyport($supplier, array $data = [])
-    {
+    protected function sendToSkyport(
+        string $supplier,
+        array $data = []
+    ) : array {
         $skyport = $this->getSkyport();
         
         $postData = [
@@ -184,8 +186,9 @@ class Keygen extends Base\Command
      * @param string $supplier_name
      * @return array
      */
-    protected function getZxcvbnKeywords($supplier_name)
-    {
+    protected function getZxcvbnKeywords(
+        string $supplier_name
+    ) : array {
         return [
             $supplier_name,
             'airship',
@@ -212,8 +215,9 @@ class Keygen extends Base\Command
      * @echo
      * @return null
      */
-    public function usageInfo(array $args = [])
-    {
+    public function usageInfo(
+        array $args = []
+    ) {
         parent::usageInfo($args);
     }
 }

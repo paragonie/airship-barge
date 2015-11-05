@@ -2,8 +2,10 @@
 namespace Airship\Barge\Commands;
 
 use \Airship\Barge as Base;
-use \ParagonIE\Halite\Asymmetric\SignaturePublicKey;
-use \ParagonIE\Halite\File;
+use \ParagonIE\Halite\{
+    Asymmetric\SignaturePublicKey,
+    File
+};
 
 class Release extends Base\Command
 {
@@ -54,8 +56,11 @@ class Release extends Base\Command
      * @param array $manifest
      * @param array $args
      */
-    protected function pushGadget($path, array $manifest = [], array $args = [])
-    {
+    protected function pushGadget(
+        string $path,
+        array $manifest = [],
+        array $args = []
+    ) {
         $pharname = $manifest['supplier'].'--'.$manifest['name'].'.phar';
         $signature = $pharname.'.ed25519.sig';
         
@@ -84,7 +89,12 @@ class Release extends Base\Command
             true
         );
         
-        var_dump($result);
+        if (isset($result['error'])) {
+            echo $result['error'], "\n";
+            exit(255);
+        } else {
+            var_dump($result);
+        }
     }
     
     /**
@@ -139,8 +149,17 @@ class Release extends Base\Command
         return true;
     }
     
-    protected function signatureCheck($path, array $manifest = [])
-    {
+    /**
+     * Check that the signature is valid for a given Phar
+     * 
+     * @param string $path
+     * @param array $manifest
+     * @return boolean
+     */
+    protected function signatureCheck(
+        string $path,
+        array $manifest = []
+    ) {
         $supplier_name = $manifest['supplier'];
         $pharname = $supplier_name.'--'.$manifest['name'].'.phar';
         $signature = \file_get_contents($path.'/dist/'.$pharname.'.ed25519.sig');
