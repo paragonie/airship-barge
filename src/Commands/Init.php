@@ -19,6 +19,7 @@ class Init extends Base\Command
      */
     public function fire(array $args = [])
     {
+        /*
         if (!\array_key_exists('suppliers', $this->config)) {
             die("Please login first!\n");
         }
@@ -35,6 +36,11 @@ class Init extends Base\Command
                 ? $args[1]
                 : $this->prompt("Please enter the name of the supplier: ");
         }
+         */
+        $basepath = \count($args) > 0
+            ? $args[0]
+            : \getcwd();
+        $supplier = 'test';
         
         echo 'What is the name of your project?', "\n";
         do {
@@ -67,6 +73,7 @@ class Init extends Base\Command
         \mkdir($basepath.'/'.$project_name.'/src/Blueprint', 0755);
         \mkdir($basepath.'/'.$project_name.'/src/Landing', 0755);
         \mkdir($basepath.'/'.$project_name.'/src/Lens', 0755);
+        \mkdir($basepath.'/'.$project_name.'/src/Updates', 0755);
         
         // Basic gadget.json
         \file_put_contents(
@@ -149,6 +156,26 @@ class Init extends Base\Command
         \file_put_contents(
             $basepath.'/'.$project_name.'/src/Lens/example.twig',
             '{{ test }}'
+        );
+        
+        // Example code for an automatic update trigger.
+        \file_put_contents(
+            $basepath.'/'.$project_name.'/src/Updates/release-0-0-1.php',
+            '<?php'."\n".
+                '$db = \Airship\get_database();'."\n".
+                '$db->insert("my_table", ['. "\n".
+                '    "column" => "value"'."\n".
+                '];'."\n\n"
+        );
+        
+        // Auto-update trigger
+        \file_put_contents(
+            $basepath.'/'.$project_name.'/update_trigger.php',
+            '<?php' . "\n" .
+                '$metadata = \Airship\loadJSON(__DIR__."gadget.json");'."\n".
+                'if (\\Airship\\expand_version($previous_metadata[\'version\']) <= \\Airship\\expand_version(\'0.0.1\')) {'."\n".
+                '    require_once __DIR__."/src/Updates/release-0-0-1.php'."\n".
+                '}'."\n\n"
         );
     }
     
