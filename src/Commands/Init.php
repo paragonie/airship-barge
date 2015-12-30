@@ -45,14 +45,9 @@ class Init extends Base\Command
         echo 'What is the name of your project?', "\n";
         do {
             $project_name = $this->prompt('Enter a project name: ');
-            if (!preg_match('#^[A-Za-z0-9_-]+$#', $project_name) || strpos($project_name, '--') !== false) {
-                echo 'Project names can only contain: ';
-                
-                echo ' * Uppercase letters (A-Z)', "\n";
-                echo ' * Lowercase letters (a-z)', "\n";
-                echo ' * Numeric digits (0-9)', "\n";
-                echo ' * Underscores (_) and single dashes(-)', "\n";
-                
+            if (preg_match('#^[\x00-\x20\*\."/\\\\\[\]:;\|=\.<>\$\x7f]+$#', $project_name)) {
+                echo 'Project names cannot contain any of the following characters:', "\n\t",
+                    '^ * " / \\ [ ] : ; | . < > $', "\n\n";
                 $project_name = null;
             }
         } while (empty($project_name));
@@ -113,7 +108,7 @@ class Init extends Base\Command
             '<?php' . "\n" .
                 '\\Airship\\autoload(' . "\n".
                     "    " . '"\\\\'. $this->upperFirst($supplier) . '\\\\' . $this->upperFirst($project_name).'",' . "\n" .
-                    "    " . '"phar://' . $supplier . '--' . $project_name . '.phar/src/'. '"' . "\n".
+                    "    " . '"phar://' . $supplier . '.' . $project_name . '.phar/src/'. '"' . "\n".
                 ');' . "\n\n" .
                 '\\Airship\\Engine\\Gadgets::loadCargo(' . "\n" .
                     "    " . '"example",' . " // Cargo placeholder\n" .

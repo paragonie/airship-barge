@@ -61,7 +61,7 @@ class Release extends Base\Command
         array $manifest = [],
         array $args = []
     ) {
-        $pharname = $manifest['supplier'].'--'.$manifest['name'].'.phar';
+        $pharname = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         $signature = $pharname.'.ed25519.sig';
         
         $skyport = $this->getSkyport();
@@ -161,7 +161,7 @@ class Release extends Base\Command
         array $manifest = []
     ) {
         $supplier_name = $manifest['supplier'];
-        $pharname = $supplier_name.'--'.$manifest['name'].'.phar';
+        $pharname = $supplier_name.'.'.$manifest['name'].'.phar';
         $signature = \file_get_contents($path.'/dist/'.$pharname.'.ed25519.sig');
         
         $supplier =& $this->config['suppliers'][$supplier_name];

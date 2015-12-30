@@ -51,7 +51,7 @@ class Build extends Base\Command
         array $args = []
     ) {
         // Step One -- Let's build our .phar file
-        $pharname = $manifest['supplier'].'--'.$manifest['name'].'.phar';
+        $pharname = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         try {
             if (\file_exists($path.'/dist/'.$pharname)) {
                 \unlink($path.'/dist/'.$pharname);

@@ -56,7 +56,7 @@ class Sign extends Base\Command
     {
         $HTAB = str_repeat(' ', ceil(self::TAB_SIZE / 2));
         
-        $pharname = $manifest['supplier'].'--'.$manifest['name'].'.phar';
+        $pharname = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         $supplier_name = $manifest['supplier'];
         
         $supplier =& $this->config['suppliers'][$supplier_name];
