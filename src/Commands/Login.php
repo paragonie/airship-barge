@@ -41,6 +41,9 @@ class Login extends Base\Command
             echo $result['error'], "\n";
             exit(255);
         }
+        if (!\array_key_exists('suppliers', $this->config)) {
+            $this->config['suppliers'] = [];
+        }
         if (\array_key_exists($username, $this->config['suppliers'])) {
             $this->config['suppliers'][$username]['token'] = $result['token'];
             foreach ($result['signing_keys'] as $res_key) {

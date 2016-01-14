@@ -59,7 +59,17 @@ class Sign extends Base\Command
         $pharname = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         $supplier_name = $manifest['supplier'];
         
-        $supplier =& $this->config['suppliers'][$supplier_name];
+        if (!\array_key_exists('suppliers', $this->config)) {
+            echo 'You are not authenticated for any suppliers.', "\n";
+            exit(255);
+        }
+        if (!\array_key_exists($supplier_name, $this->config['suppliers'])) {
+            echo 'Check the supplier in gadget.json (', $supplier_name, 
+                '). Otherwise, you might need to log in.', "\n";
+            exit(255);
+        }
+        
+        $supplier = $this->config['suppliers'][$supplier_name];
         $numKeys = \count($supplier['signing_keys']);
         if ($numKeys > 1) {
             echo 'You have more than one signing key available.', "\n";
