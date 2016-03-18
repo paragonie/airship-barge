@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Airship\Barge\Commands;
 
 use Airship\Barge as Base;
@@ -37,6 +38,10 @@ class Login extends Base\Command
             ),
             true
         );
+
+        // Wipe from memory as soon as we're done using it.
+        \Sodium\memzero($password);
+
         if (isset($result['error'])) {
             echo $result['error'], "\n";
             exit(255);

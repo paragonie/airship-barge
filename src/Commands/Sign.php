@@ -54,7 +54,7 @@ class Sign extends Base\Command
      */
     protected function signGadget(array $manifest, string $path, array $args = [])
     {
-        $HTAB = str_repeat(' ', ceil(self::TAB_SIZE / 2));
+        $HTAB = \str_repeat(' ', (int) \ceil(self::TAB_SIZE / 2));
         
         $pharname = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         $supplier_name = $manifest['supplier'];
@@ -75,11 +75,13 @@ class Sign extends Base\Command
             echo 'You have more than one signing key available.', "\n";
 
             $n = 1;
-            $size = (int) \floor(\log($numKeys, 10));
+            $size = (int) \floor(
+                \log($numKeys, 10)
+            );
             $key_associations = $HTAB."ID\t Public Key\n";
             foreach ($supplier['signing_keys'] as $sign_key) {
                 $_n = \str_pad($n, $size, ' ', STR_PAD_LEFT);
-                $key_associations .= $HTAB.$_n.$HTAB.$sign_key['public_key']."\n";
+                $key_associations .= $HTAB . $_n . $HTAB . $sign_key['public_key'] . "\n";
                 ++$n;
             }
             // Let's ascertain the user's key selection
@@ -89,7 +91,7 @@ class Sign extends Base\Command
                 if ($choice < 1 || $choice > $numKeys) {
                     $choice = null;
                 }
-            } while(empty($choice));
+            } while (empty($choice));
             $skey = $supplier['signing_keys'][$choice - 1];
         } else {
             $skey = $supplier['signing_keys'][0];
@@ -106,13 +108,17 @@ class Sign extends Base\Command
         $keypair = KeyFactory::deriveSignatureKeyPair($password, $salt);
             $sign_secret = $keypair->getSecretKey();
             $sign_public = $keypair->getPublicKey();
-        
-        $pubkey = \Sodium\bin2hex($sign_public->get());
+
+        // Check that the public key we derived from the password matches the one on file
+        $pubkey = \Sodium\bin2hex($sign_public->getRawKeyMaterial());
         if ($skey['public_key'] !== $pubkey) {
             echo 'Invalid password', "\n";
             exit(255);
         }
-        $signature = File::signFile($path.'/dist/'.$pharname, $sign_secret);
+        $signature = File::signFile(
+            $path.'/dist/'.$pharname,
+            $sign_secret
+        );
         
         $res = \file_put_contents(
             $path.'/dist/'.$pharname.'.ed25519.sig',

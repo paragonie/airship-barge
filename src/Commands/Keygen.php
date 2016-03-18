@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Airship\Barge\Commands;
 
 use \Airship\Barge as Base;
@@ -64,9 +65,7 @@ class Keygen extends Base\Command
         }
         
         echo 'Generating a unique salt...', "\n";
-        $salt = \Sodium\randombytes_buf(
-            \Sodium\CRYPTO_PWHASH_SCRYPTSALSA208SHA256_SALTBYTES
-        );
+        $salt = \random_bytes(\Sodium\CRYPTO_PWHASH_SALTBYTES);
         
         $store_in_cloud = null;
         
@@ -78,7 +77,8 @@ class Keygen extends Base\Command
         echo $this->c['red'], 'Con:', $this->c[''],
             ' If your salt is stored online, the security of your signing key depends', "\n", 
             '     entirely on your password.', "\n\n";
-        
+
+        // Iterate until we get a valid response
         while ($store_in_cloud === null) {
             $choice = $this->prompt('Store salt in the Skyport? (y/N): ');
             switch ($choice) {
@@ -104,7 +104,9 @@ class Keygen extends Base\Command
         $userInput = $this->getZxcvbnKeywords($supplier);
         
         // If we're storing in the cloud, our standards should be much higher.
-        $min_score = $store_in_cloud ? 3 : 2;
+        $min_score = $store_in_cloud
+            ? 3
+            : 2;
         
         do {
             // Next, let's get a password.
@@ -155,11 +157,12 @@ class Keygen extends Base\Command
      * 
      * @param string $supplier
      * @param array $data
+     * @return array
      */
     protected function sendToSkyport(
         string $supplier,
         array $data = []
-    ) : array {
+    ): array {
         $skyport = $this->getSkyport();
         
         $postData = [
@@ -167,6 +170,8 @@ class Keygen extends Base\Command
             'publickey' => $data['public_key'],
             'type' => $data['type']
         ];
+
+        // The user must opt in for this to be invoked:
         if ($data['store_in_cloud']) {
             $postData['stored_salt'] = $data['salt'];
         }
@@ -188,7 +193,7 @@ class Keygen extends Base\Command
      */
     protected function getZxcvbnKeywords(
         string $supplier_name
-    ) : array {
+    ): array {
         return [
             $supplier_name,
             'airship',
@@ -213,11 +218,9 @@ class Keygen extends Base\Command
      *
      * @param array $args - CLI arguments
      * @echo
-     * @return null
      */
-    public function usageInfo(
-        array $args = []
-    ) {
+    public function usageInfo(array $args = [])
+    {
         parent::usageInfo($args);
     }
 }

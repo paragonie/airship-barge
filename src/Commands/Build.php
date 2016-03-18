@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Airship\Barge\Commands;
 
 use \Airship\Barge as Base;

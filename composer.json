@@ -19,7 +19,9 @@
     },
     "require": {
         "php": "^7.0.0",
+        "ext-libsodium": "^1.0.3",
         "bjeavons/zxcvbn-php": "*",
-        "paragonie/halite": "^1.1"
+        "paragonie/constant_time_encoding": "^0.5",
+        "paragonie/halite": "^2.0"
     }
 }

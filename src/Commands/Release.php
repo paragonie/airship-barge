@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Airship\Barge\Commands;
 
 use \Airship\Barge as Base;
@@ -92,9 +93,10 @@ class Release extends Base\Command
         if (isset($result['error'])) {
             echo $result['error'], "\n";
             exit(255);
-        } else {
-            var_dump($result);
         }
+
+        echo 'Transfer complete.', "\n";
+        exit(0);
     }
     
     /**
@@ -154,12 +156,12 @@ class Release extends Base\Command
      * 
      * @param string $path
      * @param array $manifest
-     * @return boolean
+     * @return bool
      */
     protected function signatureCheck(
         string $path,
         array $manifest = []
-    ) {
+    ): bool {
         $supplier_name = $manifest['supplier'];
         $pharname = $supplier_name.'.'.$manifest['name'].'.phar';
         $signature = \file_get_contents($path.'/dist/'.$pharname.'.ed25519.sig');

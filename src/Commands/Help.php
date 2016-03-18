@@ -1,7 +1,9 @@
 <?php
+declare(strict_types=1);
 namespace Airship\Barge\Commands;
 
-use Airship\Barge as Base;
+use \Airship\Barge\MetaData;
+use \Airship\Barge as Base;
 
 class Help extends Base\Command
 {
@@ -20,6 +22,8 @@ class Help extends Base\Command
 
     /**
      * Preamble before firing is done here
+     *
+     * @param array $commands A list of available commands
      */
     public function __construct(array $commands = [])
     {
@@ -27,7 +31,7 @@ class Help extends Base\Command
     }
     
     /**
-     * Display the ASGard Header.
+     * Display the Barge header.
      */
     public function bargeHeader()
     {
@@ -52,13 +56,7 @@ class Help extends Base\Command
         $pad[0] = str_repeat(' ', $pads[0]);
         $pad[1] = str_repeat(' ', $pads[1]);
         $pad[2] = str_repeat(' ', $pads[2]);
-        
-        
 
-
-
-
-        
         echo <<<EOBANNER
 \033[40m\033[1;94m  __             \033[39m   {$pad[0]}
 \033[40m\033[1;94m |__) _  _ _  _  \033[39m   {$pad[0]}
@@ -90,13 +88,12 @@ EOBANNER;
         $this->bargeHeader();
         $this->usageInfo($args);
         $w = $this->getScreenSize()['width'];
-        echo "\n", str_repeat('_', $w - 1), "\n";
+        echo "\n", \str_repeat('_', $w - 1), "\n";
     }
 
     /**
      * Display the main help menu
-     * 
-     * @param boolean $showAll Show all commands?
+     *
      * @echo
      * @return null
      */
@@ -106,14 +103,14 @@ EOBANNER;
         $coms = [];
         $columns = [8, 4, 11];
         foreach ($this->commands as $i => $name) {
-            if (strlen($i) > $columns[0]) {
+            if (\strlen($i) > $columns[0]) {
                 $columns[0] = strlen($i);
             }
             if ($name === 'Help') {
-                if (strlen($this->name) > $columns[1]) {
+                if (\strlen($this->name) > $columns[1]) {
                     $columns[1] = strlen($this->name);
                 }
-                if (strlen($this->description) > $columns[2]) {
+                if (\strlen($this->description) > $columns[2]) {
                     $columns[2] = strlen($this->description);
                 }
                 $coms[$i] = [
@@ -123,7 +120,7 @@ EOBANNER;
                 ];
             } else {
                 $com = $this->getCommandObject($name);
-                if (strlen($com->name) > $columns[1]) {
+                if (\strlen($com->name) > $columns[1]) {
                     $columns[1] = strlen($com->name);
                 }
                 
@@ -141,7 +138,7 @@ EOBANNER;
                         ' '.
                         $com->description;
                 }
-                if (strlen($descr) > $columns[2]) {
+                if (\strlen($descr) > $columns[2]) {
                     $columns[2] = strlen($descr);
                 }
                 
@@ -162,8 +159,8 @@ EOBANNER;
             }
         }
         
-        uasort($essential, [$this, 'sortCommands']);
-        uasort($coms, [$this, 'sortCommands']);
+        \uasort($essential, [$this, 'sortCommands']);
+        \uasort($coms, [$this, 'sortCommands']);
 
         $width = $this->getScreenSize()['width'];
         
@@ -173,15 +170,15 @@ EOBANNER;
         // Prevent wrapping because of newline characters
         --$columns[2];
 
-        $repeatPad = str_repeat(' ', $columns[0] + $columns[1] + (3 * self::TAB_SIZE));
-        $TAB = str_repeat(' ', self::TAB_SIZE);
-        $HTAB = str_repeat(' ', ceil(self::TAB_SIZE / 2));
+        $repeatPad = \str_repeat(' ', $columns[0] + $columns[1] + (3 * self::TAB_SIZE));
+        $TAB = \str_repeat(' ', self::TAB_SIZE);
+        $HTAB = \str_repeat(' ', ceil(self::TAB_SIZE / 2));
         
         $header = $this->c['blue'].
             $TAB.
-            str_pad('Command', $columns[0], ' ', STR_PAD_RIGHT).
+            \str_pad('Command', $columns[0], ' ', STR_PAD_RIGHT).
                 $TAB.
-            str_pad('Name', $columns[1], ' ', STR_PAD_RIGHT).
+            \str_pad('Name', $columns[1], ' ', STR_PAD_RIGHT).
                 $TAB.
             'Description'.
             $this->c['silver'].
@@ -254,7 +251,7 @@ EOBANNER;
         if ($a['display'] < $b['display']) {
             return -1;
         }
-        return strcmp($a['name'], $b['name']);
+        return \strcmp($a['name'], $b['name']);
     }
 
     /**
@@ -266,16 +263,16 @@ EOBANNER;
      */
     public function usageInfo(array $args = [])
     {
-        if (count($args) == 0) {
+        if (\count($args) == 0) {
             return $this->helpMenu();
         }
-        if (strtolower($args[0]) !== 'help') {
+        if (\strtolower($args[0]) !== 'help') {
             foreach ($this->commands as $i => $name) {
                 if (strtolower($args[0]) === $i) {
                     $com = $this->getCommandObject($name);
                     return $com->usageInfo(
-                        array_values(
-                            array_slice($args, 1)
+                        \array_values(
+                            \array_slice($args, 1)
                         )
                     );
                 }
@@ -288,7 +285,7 @@ EOBANNER;
         
         echo "Barge Version ".
             $this->c['yellow'].
-            \Airship\Barge\MetaData::VERSION.
+            MetaData::VERSION.
             $this->c[''].
             "\n\n";
         

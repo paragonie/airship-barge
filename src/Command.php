@@ -195,7 +195,6 @@ abstract class Command
      *
      * @param array $args - CLI arguments
      * @echo
-     * @return null
      */
     public function usageInfo(array $args = [])
     {

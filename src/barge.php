@@ -1,8 +1,12 @@
 <?php
+declare(strict_types=1);
+
+use \Airship\Barge\Command;
+use \Airship\Barge\Commands\Help;
 /**
  * This script is the entry point for all Barge commands.
  */
-define('AIRSHIP_ROOT', __DIR__);
+\define('AIRSHIP_ROOT', __DIR__);
 $homedir = isset($_SERVER['HOME'])
     ? $_SERVER['HOME']
     : \posix_getpwuid(posix_getuid())['dir'];
@@ -74,7 +78,7 @@ foreach (\glob(__DIR__.'/Commands/*.php') as $file) {
         // If this is the command the user passed...
         if ($index === $argv[1]) {
             // Instantiate this object
-            $exec = \Airship\Barge\Command::getCommandStatic($classname);
+            $exec = Command::getCommandStatic($classname);
             // Store the relevant storage devices in the command, in case they're needed
             $exec->storeConfig($config);
             // Execute it, passing the extra parameters to the command's fire() method
@@ -98,7 +102,7 @@ foreach (\glob(__DIR__.'/Commands/*.php') as $file) {
 /**
  * 4. If all else fails, fall back to the help class...
  */
-$help = new \Airship\Barge\Commands\Help($commands);
+$help = new Help($commands);
 $help->showAll = $showAll;
 $help->storeConfig($config);
 $help->fire(
