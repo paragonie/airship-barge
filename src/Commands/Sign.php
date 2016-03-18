@@ -54,7 +54,7 @@ class Sign extends Base\Command
      */
     protected function signGadget(array $manifest, string $path, array $args = [])
     {
-        $HTAB = \str_repeat(' ', (int) \ceil(self::TAB_SIZE / 2));
+        $HTAB = \str_repeat(' ', \intdiv(self::TAB_SIZE, 2));
         
         $pharname = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         $supplier_name = $manifest['supplier'];

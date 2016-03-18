@@ -35,7 +35,7 @@ class Help extends Base\Command
      */
     public function bargeHeader()
     {
-        $w = $this->getScreenSize()['width'];
+        $w = $this->getScreenSize()['width'] + 0;
         if ($w >= 80) {
             $post = [
                 'Airship / Barge Command Line Interface',
@@ -48,14 +48,14 @@ class Help extends Base\Command
             ];
         }
         // Pad sizes
-        $pads[0] = ($w - 23);
-        $pads[1] = $pads[0] - mb_strlen($post[0], '8bit');
-        $pads[2] = $pads[0] - mb_strlen($post[1], '8bit');
+        $pads[0] = ($w - 20);
+        $pads[1] = $pads[0] - \mb_strlen($post[0], '8bit');
+        $pads[2] = $pads[0] - \mb_strlen($post[1], '8bit');
         
         // Space padding
-        $pad[0] = str_repeat(' ', $pads[0]);
-        $pad[1] = str_repeat(' ', $pads[1]);
-        $pad[2] = str_repeat(' ', $pads[2]);
+        $pad[0] = \str_repeat(' ', $pads[0]);
+        $pad[1] = \str_repeat(' ', $pads[1]);
+        $pad[2] = \str_repeat(' ', $pads[2]);
 
         echo <<<EOBANNER
 \033[40m\033[1;94m  __             \033[39m   {$pad[0]}
@@ -172,7 +172,7 @@ EOBANNER;
 
         $repeatPad = \str_repeat(' ', $columns[0] + $columns[1] + (3 * self::TAB_SIZE));
         $TAB = \str_repeat(' ', self::TAB_SIZE);
-        $HTAB = \str_repeat(' ', ceil(self::TAB_SIZE / 2));
+        $HTAB = str_repeat(' ', (int) self::TAB_SIZE >> 1);
         
         $header = $this->c['blue'].
             $TAB.
@@ -281,7 +281,7 @@ EOBANNER;
         // Now let's actually print the usage info for this class
         
         $TAB = str_repeat(' ', self::TAB_SIZE);
-        $HTAB = str_repeat(' ', ceil(self::TAB_SIZE / 2));
+        $HTAB = str_repeat(' ', (int) self::TAB_SIZE >> 1);
         
         echo "Barge Version ".
             $this->c['yellow'].

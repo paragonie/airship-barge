@@ -11,6 +11,10 @@ namespace Airship\Barge\Commands;
  */
 class Gadget extends Proto\Init
 {
+    public $essential = true;
+    public $name = 'Gadget';
+    public $description = 'Create a new Airship Gadget project.';
+    public $display = 2;
     /**
      * @param string $supplier
      * @param string $project_name

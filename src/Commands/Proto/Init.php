@@ -6,11 +6,6 @@ use \Airship\Barge as Base;
 
 abstract class Init extends Base\Command
 {
-    public $essential = true;
-    public $name = 'Initialize';
-    public $description = 'Create a new Airship Gadget project.';
-    public $display = 1;
-    
     /**
      * Execute the build command
      *
