@@ -46,13 +46,22 @@ class Gadget extends Proto\Init
             $basepath.'/'.$project_name.'/gadget.json',
             \json_encode(
                 [
-                    'name' => $project_name,
-                    'version' => '0.0.1',
-                    'description' => $description,
-                    'blueprints' => [],
-                    'landings' => [],
-                    'routes' => [],
-                    'supplier' => $supplier
+                    'name' =>
+                        $project_name,
+                    'cabin' =>
+                        null,
+                    'version' =>
+                        '0.0.1',
+                    'description' =>
+                        $description,
+                    'blueprints' =>
+                        [],
+                    'landings' =>
+                        [],
+                    'routes' =>
+                        [],
+                    'supplier' =>
+                        $supplier
                 ],
                 JSON_PRETTY_PRINT
             )

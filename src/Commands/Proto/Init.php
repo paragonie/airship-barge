@@ -51,6 +51,13 @@ abstract class Init extends Base\Command
         if (empty($description)) {
             $description = 'Not provided';
         }
+
+        return $this->createSkeleton(
+            $supplier,
+            $project_name,
+            $basepath,
+            $description
+        );
     }
 
     /**
