@@ -75,7 +75,7 @@ abstract class Init extends Base\Command
     ): bool;
     
     /**
-     * Domain-specfiic variant of PHP's native ucfirst()
+     * Domain-specific variant of PHP's native ucfirst()
      * 
      * @param string $string
      * @return string
