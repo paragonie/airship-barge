@@ -18,16 +18,26 @@ class Cabin extends Proto\Init
     /**
      * @param string $supplier
      * @param string $project_name
-     * @param string $basepath
+     * @param string $basePath
      * @param string $description
+     * @param array  $extra
      * @return bool
      */
     protected function createSkeleton(
         string $supplier,
         string $project_name,
-        string $basepath,
-        string $description
+        string $basePath,
+        string $description,
+        array  $extra = []
     ): bool {
 
+    }
+
+    /**
+     * @return array
+     */
+    protected function getExtraData(): array
+    {
+        return [];
     }
 }

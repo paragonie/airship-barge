@@ -29,9 +29,20 @@ class Sign extends Base\Command
         $path = \count($args) > 0
             ? $args[0]
             : \getcwd();
-        if (!\is_readable($path.'/gadget.json')) {
-            die("Could not find gadget.json");
+
+        // Cabins:
+        if (\is_readable($path.'/cabin.json')) {
+            $manifest = \json_decode(
+                \file_get_contents($path.'/cabin.json'),
+                true
+            );
+            $this->signCabin(
+                $manifest,
+                $path,
+                \array_slice($args, 1)
+            );
         }
+        // Gadgets:
         if (\is_readable($path.'/gadget.json')) {
             $manifest = \json_decode(
                 \file_get_contents($path.'/gadget.json'),
@@ -43,6 +54,34 @@ class Sign extends Base\Command
                 \array_slice($args, 1)
             );
         }
+
+        // Motifs:
+        if (\is_readable($path.'/motif.json')) {
+            $manifest = \json_decode(
+                \file_get_contents($path.'/motif.json'),
+                true
+            );
+            $this->signMotif(
+                $manifest,
+                $path,
+                \array_slice($args, 1)
+            );
+        }
+
+        echo 'Could not find manifest file.', "\n";
+        exit(255);
+    }
+
+    /**
+     * Sign a cabin
+     *
+     * @param array $manifest
+     * @param string $path
+     * @param array $args
+     */
+    protected function signCabin(array $manifest, string $path, array $args = [])
+    {
+        /** @todo write this */
     }
     
     /**
@@ -56,7 +95,7 @@ class Sign extends Base\Command
     {
         $HTAB = \str_repeat(' ', \intdiv(self::TAB_SIZE, 2));
         
-        $pharname = $manifest['supplier'].'.'.$manifest['name'].'.phar';
+        $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         $supplier_name = $manifest['supplier'];
         
         if (!\array_key_exists('suppliers', $this->config)) {
@@ -92,41 +131,63 @@ class Sign extends Base\Command
                     $choice = null;
                 }
             } while (empty($choice));
-            $skey = $supplier['signing_keys'][$choice - 1];
+            $supplierKey = $supplier['signing_keys'][$choice - 1];
         } else {
-            $skey = $supplier['signing_keys'][0];
+            $supplierKey = $supplier['signing_keys'][0];
         }
         
-        if (empty($skey['salt'])) {
+        if (empty($supplierKey['salt'])) {
             echo 'Salt not found for this key.', "\n";
             exit(255);
         }
         
         $password = $this->silentPrompt('Enter Password for Signing Key:');
-        
-        $salt = \Sodium\hex2bin($skey['salt']);
-        $keypair = KeyFactory::deriveSignatureKeyPair($password, $salt);
-            $sign_secret = $keypair->getSecretKey();
-            $sign_public = $keypair->getPublicKey();
+
+        // Derive and split the SignatureKeyPair from your password and salt
+        $salt = \Sodium\hex2bin($supplierKey['salt']);
+        $keyPair = KeyFactory::deriveSignatureKeyPair($password, $salt);
+            $sign_secret = $keyPair->getSecretKey();
+            $sign_public = $keyPair->getPublicKey();
+
 
         // Check that the public key we derived from the password matches the one on file
-        $pubkey = \Sodium\bin2hex($sign_public->getRawKeyMaterial());
-        if ($skey['public_key'] !== $pubkey) {
+        $pubKey = \Sodium\bin2hex($sign_public->getRawKeyMaterial());
+        if (!\hash_equals($supplierKey['public_key'], $pubKey)) {
+            // Zero the memory ASAP
+            unset($sign_public);
             echo 'Invalid password', "\n";
             exit(255);
         }
-        $signature = File::signFile(
-            $path.'/dist/'.$pharname,
+        // Zero the memory ASAP
+        unset($sign_public);
+
+        // This is the actual signing part.
+        $signature = File::sign(
+            $path.'/dist/'.$pharName,
             $sign_secret
         );
+        // We no longer need this, so unset it. Halite will zero the buffer for us.
+        unset($sign_secret);
         
         $res = \file_put_contents(
-            $path.'/dist/'.$pharname.'.ed25519.sig',
+            $path.'/dist/'.$pharName.'.ed25519.sig',
             $signature
         );
         if ($res !== false) {
-            echo 'Signed: ', $path, '/dist/', $pharname, '.ed25519.sig', "\n";
+            echo 'Signed: ', $path, '/dist/', $pharName, '.ed25519.sig', "\n";
             exit(0);
         }
+    }
+
+    /**
+     * Sign a motif
+     *
+     * @param array $manifest
+     * @param string $path
+     * @param array $args
+     */
+    protected function signMotif(array $manifest, string $path, array $args = [])
+    {
+        /** @todo write this */
     }
 }

@@ -127,11 +127,11 @@ class Keygen extends Base\Command
         
         echo 'Generating signing key...';
         
-        $keypair = KeyFactory::deriveSignatureKeyPair(
+        $keyPair = KeyFactory::deriveSignatureKeyPair(
             $password,
             $salt
         );
-        $sign_public = $keypair->getPublicKey();
+        $sign_public = $keyPair->getPublicKey();
         echo 'DONE!', "\n";
         
         // Wipe the password from memory
@@ -141,7 +141,7 @@ class Keygen extends Base\Command
         $new_key = [
             'store_in_cloud' => $store_in_cloud,
             'salt' => \Sodium\bin2hex($salt),
-            'public_key' => \Sodium\bin2hex($sign_public->get()),
+            'public_key' => \Sodium\bin2hex($sign_public->getRawKeyMaterial()),
             'type' => $key_type
         ];
         
@@ -177,7 +177,7 @@ class Keygen extends Base\Command
         }
         
         $response = Base\HTTP::post(
-            $skyport.'key/add',
+            $skyport . 'key/add',
             $postData
         );
         return \json_decode($response, true);
@@ -201,26 +201,17 @@ class Keygen extends Base\Command
             'flotilla',
             'php 7',
             'libsodium',
+            'sodium',
             'NaCl',
             'crypto',
             'cryptography',
             'Halite',
             'scrypt',
             'argon2',
+            'argon2i',
             'kdf',
             'paragon',
             'Paragon Initiative Enterprises'
         ];
-    }
-    
-    /**
-     * Display the usage information for this command.
-     *
-     * @param array $args - CLI arguments
-     * @echo
-     */
-    public function usageInfo(array $args = [])
-    {
-        parent::usageInfo($args);
     }
 }

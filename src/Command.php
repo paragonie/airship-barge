@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Airship\Barge;
 
 abstract class Command
@@ -63,8 +64,9 @@ abstract class Command
      * 
      * @param string $name
      * @param boolean $cache
+     * @return Command
      */
-    public function getCommandObject($name, $cache = true)
+    public function getCommandObject($name, $cache = true): Command
     {
         $obj = self::getCommandStatic($name, $cache);
         if (!empty($this->db) && !empty($this->bc)) {
@@ -80,6 +82,7 @@ abstract class Command
      * Get a token for HTTP requests
      * 
      * @param string $supplier
+     * @return string|null
      */
     public function getToken($supplier)
     {
@@ -98,9 +101,9 @@ abstract class Command
      * 
      * @param string $name
      * @param boolean $cache
-     * @return \ParagonIE\AsgardClient\Command
+     * @return Command
      */
-    public static function getCommandStatic($name, $cache = true)
+    public static function getCommandStatic($name, $cache = true): Command
     {
         $_name = '\\Airship\\Barge\\Commands\\'.\ucfirst($name);
         if (!empty(self::$cache[$name])) {
@@ -112,18 +115,24 @@ abstract class Command
         }
         return new $_name;
     }
-    
-    final public function storeConfig($data)
+
+    /**
+     * @param $data
+     */
+    final public function storeConfig(array $data = [])
     {
         $this->config = $data;
     }
-    
-    final public function saveConfig()
+
+    /**
+     * @return bool
+     */
+    final public function saveConfig(): bool
     {
         return \file_put_contents(
             AIRSHIP_LOCAL_CONFIG."/config.json",
             \json_encode($this->config, JSON_PRETTY_PRINT)
-        );
+        ) !== false;
     }
     
     /**
@@ -132,7 +141,7 @@ abstract class Command
      * @param string $text
      * @return string
      */
-    final protected function prompt($text)
+    final protected function prompt(string $text = ''): string
     {
         static $fp = null;
         if ($fp === null) {
@@ -170,12 +179,16 @@ abstract class Command
                 throw new \Exception("Can't invoke bash");
             }
             $command = "/usr/bin/env bash -c 'read -s -p \"". addslashes($text). "\" mypassword && echo \$mypassword'";
-            $password = rtrim(shell_exec($command));
+            $password = \rtrim(\shell_exec($command));
             echo "\n";
             return $password;
         }
     }
-    
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
     final protected function getSkyport()
     {
         $sp = $this->config['skyports'];

@@ -7,11 +7,11 @@ use \Airship\Barge\Commands\Help;
  * This script is the entry point for all Barge commands.
  */
 \define('AIRSHIP_ROOT', __DIR__);
-$homedir = isset($_SERVER['HOME'])
+$homeDir = isset($_SERVER['HOME'])
     ? $_SERVER['HOME']
     : \posix_getpwuid(posix_getuid())['dir'];
-define('AIRSHIP_USER_HOME', $homedir);
-define('AIRSHIP_LOCAL_CONFIG', AIRSHIP_USER_HOME.'/.airship');
+define('AIRSHIP_USER_HOME', $homeDir);
+define('AIRSHIP_LOCAL_CONFIG', AIRSHIP_USER_HOME . DIRECTORY_SEPARATOR . '.airship');
 
 if (!\is_dir(AIRSHIP_LOCAL_CONFIG)) {
     \mkdir(AIRSHIP_LOCAL_CONFIG, 0700);
@@ -68,17 +68,17 @@ foreach (\glob(__DIR__.'/Commands/*.php') as $file) {
     // Let's build a queue of all the file names
     
     // Grab the filename from the Commands directory:
-    $classname = \preg_replace('#.*/([A-Za-z0-9_]+)\.php$#', '$1', $file);
-    $index = \strtolower($classname);
+    $className = \preg_replace('#.*/([A-Za-z0-9_]+)\.php$#', '$1', $file);
+    $index = \strtolower($className);
     
     // Append to $commands array
-    $commands[$index] = $classname;
+    $commands[$index] = $className;
 
     if ($argv[1] !== 'help') {
         // If this is the command the user passed...
         if ($index === $argv[1]) {
             // Instantiate this object
-            $exec = Command::getCommandStatic($classname);
+            $exec = Command::getCommandStatic($className);
             // Store the relevant storage devices in the command, in case they're needed
             $exec->storeConfig($config);
             // Execute it, passing the extra parameters to the command's fire() method

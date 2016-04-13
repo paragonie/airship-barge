@@ -270,11 +270,12 @@ EOBANNER;
             foreach ($this->commands as $i => $name) {
                 if (strtolower($args[0]) === $i) {
                     $com = $this->getCommandObject($name);
-                    return $com->usageInfo(
+                    $com->usageInfo(
                         \array_values(
                             \array_slice($args, 1)
                         )
                     );
+                    return null;
                 }
             }
         }

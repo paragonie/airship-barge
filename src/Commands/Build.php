@@ -8,7 +8,7 @@ class Build extends Base\Command
 {
     public $essential = true;
     public $name = 'Build';
-    public $description = 'Build the Gear or Gadget in the current directory.';
+    public $description = 'Build the Cabin, Gadget, or Motif in the current directory.';
     public $display = 2;
     
     /**
@@ -23,9 +23,10 @@ class Build extends Base\Command
         $path = \count($args) > 0
             ? $args[0]
             : \getcwd();
-        if (!\is_readable($path.'/gadget.json')) {
-            die("Could not find gadget.json");
-        }
+
+        // Cabins
+
+        // Gadgets
         if (\is_readable($path.'/gadget.json')) {
             $manifest = \json_decode(
                 \file_get_contents($path.'/gadget.json'),
@@ -37,6 +38,9 @@ class Build extends Base\Command
                 \array_slice($args, 1)
             );
         }
+
+        // Motifs
+        
     }
     
     /**

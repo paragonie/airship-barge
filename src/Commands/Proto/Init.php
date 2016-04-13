@@ -18,7 +18,7 @@ abstract class Init extends Base\Command
         if (!\array_key_exists('suppliers', $this->config)) {
             die("Please login first!\n");
         }
-        $basepath = \count($args) > 0
+        $basePath = \count($args) > 0
             ? $args[0]
             : \getcwd();
 
@@ -52,11 +52,14 @@ abstract class Init extends Base\Command
             $description = 'Not provided';
         }
 
+        $extra = $this->getExtraData();
+
         return $this->createSkeleton(
             $supplier,
             $project_name,
-            $basepath,
-            $description
+            $basePath,
+            $description,
+            $extra
         );
     }
 
@@ -65,14 +68,23 @@ abstract class Init extends Base\Command
      * @param string $project_name
      * @param string $basepath
      * @param string $description
+     * @param array  $extra
      * @return bool
      */
     abstract protected function createSkeleton(
         string $supplier,
         string $project_name,
-        string $basepath,
-        string $description
+        string $basePath,
+        string $description,
+        array  $extra = []
     ): bool;
+
+    /**
+     * Prompt the user for information specific to this project.
+     *
+     * @return array
+     */
+    abstract protected function getExtraData(): array;
     
     /**
      * Domain-specific variant of PHP's native ucfirst()
