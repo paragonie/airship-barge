@@ -66,7 +66,7 @@ abstract class Init extends Base\Command
     /**
      * @param string $supplier
      * @param string $project_name
-     * @param string $basepath
+     * @param string $basePath
      * @param string $description
      * @param array  $extra
      * @return bool

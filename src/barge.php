@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use \Airship\Barge\Command;
 use \Airship\Barge\Commands\Help;
+use \ParagonIE\Halite\Halite;
 /**
  * This script is the entry point for all Barge commands.
  */
@@ -46,6 +47,31 @@ if (!\extension_loaded('libsodium')) {
     die(
         "Please install libsodium and the libsodium-php extension from PECL\n\n".
         "\thttps://paragonie.com/book/pecl-libsodium/read/00-intro.md#installing-libsodium\n"
+    );
+}
+
+/**
+ * Let the user know precisely what's wrong, if anything is wrong.
+ */
+if (!Halite::isLibsodiumSetupCorrectly()) {
+    // Easiest way to grab this info:
+    \ob_start(); \phpinfo(); $data = \ob_get_clean();
+
+    $version = '';
+    foreach (\explode("\n", $data) as $line) {
+        if (empty($line)) {
+            continue;
+        }
+        if (\strpos($line, 'libsodium compiled version') !== false) {
+            $version = \trim(\substr(\trim($line), -6));
+            break;
+        }
+    }
+
+    die(
+        "Your libsodium is not setup correctly. Please make sure you have at least:\n\n" .
+        "\tlibsodium     v1.0.9 (Installed: " . \Sodium\version_string() .")\n" .
+        "\tlibsodium-php v1.0.3 (Installed: " . $version . ")\n"
     );
 }
 
