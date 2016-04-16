@@ -5,6 +5,7 @@ namespace Airship\Barge\Commands;
 use \Airship\Barge as Base;
 use \ZxcvbnPhp\Zxcvbn;
 use \ParagonIE\Halite\KeyFactory;
+use \ParagonIE\Halite\Asymmetric\Crypto as Asymmetric;
 
 class Keygen extends Base\Command
 {
@@ -39,8 +40,10 @@ class Keygen extends Base\Command
         }
         
         if (\count($this->config['suppliers'][$supplier]['signing_keys']) === 0) {
+            $has_master = false;
             $key_type = 'master';
         } else {
+            $has_master = true;
             echo 'Please enter the key type you would like to generate (master, sub).', "\n";
             do {
                 $key_type = $this->prompt('Key type: ');
@@ -139,17 +142,113 @@ class Keygen extends Base\Command
         
         // Store this in the configuration
         $new_key = [
+            'date_generated' => \date('Y-m-d\TH:i:s'),
             'store_in_cloud' => $store_in_cloud,
             'salt' => \Sodium\bin2hex($salt),
             'public_key' => \Sodium\bin2hex($sign_public->getRawKeyMaterial()),
             'type' => $key_type
         ];
+
+        if ($has_master) {
+            list($masterSig, $masterPubKey) = $this->signNewKeyWithMasterKey($supplier, $new_key);
+        } else {
+            // This is our first key, so we don't need it.
+            $masterSig = '';
+            $masterPubKey = '';
+        }
         
         // Save the configuration
         $this->config['suppliers'][$supplier]['signing_keys'][] = $new_key;
         
         // Send the public kay (and, maybe, the salt) to the Skyport.
-        $this->sendToSkyport($supplier, $new_key);
+        $this->sendToSkyport($supplier, $new_key, $masterSig, $masterPubKey);
+    }
+
+    /**
+     * Sign the new key with our current master key
+     *
+     * @param string $supplier
+     * @param array $newKey
+     * @return string[]
+     * @throws \Exception
+     */
+    protected function signNewKeyWithMasterKey(string $supplier, array $newKey): array
+    {
+        // This is the message we are signing.
+        $messageToSign = \json_encode(
+            [
+                'date_generated' =>
+                    $newKey['date_generated'],
+                'public_key' =>
+                    $newKey['public_key']
+            ]
+        );
+
+        $master_keys = [];
+        foreach ($this->config['suppliers'][$supplier]['signing_keys'] as $key) {
+            if ($key['type'] === 'master' && !empty($key['salt'])) {
+                $master_keys [] = $key;
+            }
+        }
+
+        // This shouldn't happen, but just in case:
+        if (empty($master_keys)) {
+            throw new \Exception(
+                'You cannot generate another key unless you already have a master key with the salt loaded locally.'
+            );
+        }
+
+        // Select the correct master key.
+        if (\count($master_keys) === 1) {
+            $signingKey = $master_keys[0];
+        } else {
+            echo 'Select which master key to use:';
+            do {
+                foreach ($master_keys as $index => $key) {
+                    echo ($index + 1), "\t", $key['public_key'], "\n";
+                }
+                $keyIndex = $this->prompt('Enter a number: ');
+                if (empty($keyIndex)) {
+                    // Okay, let's cancel.
+                    throw new \Exception('Aborted.');
+                }
+                if ($keyIndex < 1 || $keyIndex > \count($master_keys)) {
+                    $keyIndex = 0;
+                    echo 'Please enter a number between 1 and ', \count($master_keys), ".\n";
+                }
+            } while ($keyIndex < 1);
+            $signingKey = $master_keys[--$keyIndex];
+        }
+
+        $signature = '';
+        $masterSalt = \Sodium\hex2bin($signingKey['salt']);
+        do {
+            $password = $this->silentPrompt('Enter the password for your master key: ');
+            if (empty($password)) {
+                // Okay, let's cancel.
+                throw new \Exception('Aborted.');
+            }
+            $masterKeyPair = KeyFactory::deriveSignatureKeyPair($password, $masterSalt);
+
+            // We must verify the public key matches:
+            $masterPublicKey = $masterKeyPair->getPublicKey();
+            if (\hash_equals(
+                $masterPublicKey->getRawKeyMaterial(),
+                \Sodium\hex2bin($signingKey['public_key'])
+            )) {
+                $masterSecretKey = $masterKeyPair->getSecretKey();
+                $signature = Asymmetric::sign(
+                    $messageToSign,
+                    $masterSecretKey
+                );
+            }
+        } while (!$signature);
+
+        // We are returning two strings:
+        return [
+            $signature,
+            $signingKey['public_key']
+        ];
     }
     
     /**
@@ -157,16 +256,21 @@ class Keygen extends Base\Command
      * 
      * @param string $supplier
      * @param array $data
+     * @param string $masterSignature
+     * @param string $masterPublicKey
      * @return array
      */
     protected function sendToSkyport(
         string $supplier,
-        array $data = []
+        array $data = [],
+        string $masterSignature,
+        string $masterPublicKey
     ): array {
         $skyport = $this->getSkyport();
         
         $postData = [
             'token' => $this->getToken($supplier),
+            'date_generated' => $data['date_generated'],
             'publickey' => $data['public_key'],
             'type' => $data['type']
         ];
@@ -174,6 +278,18 @@ class Keygen extends Base\Command
         // The user must opt in for this to be invoked:
         if ($data['store_in_cloud']) {
             $postData['stored_salt'] = $data['salt'];
+        }
+
+        // If this isn't our first key, we should be signing it with our master key.
+        if ($masterPublicKey && $masterSignature) {
+            // The skyport MUST make validate the master public key before checking
+            // the signature.
+            $postData['master'] = [
+                // Only used for "which key?", don't trust this input
+                'public_key' => $masterPublicKey,
+                // Should validate date_generated and publickey
+                'signature' => $masterSignature
+            ];
         }
         
         $response = Base\HTTP::post(
