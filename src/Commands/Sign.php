@@ -5,8 +5,6 @@ use \Airship\Barge as Base;
 use \ParagonIE\Halite\{
     File,
     KeyFactory,
-    SignatureKeyPair,
-    Asymmetric\SignaturePublicKey,
     Asymmetric\SignatureSecretKey
 };
 
@@ -73,41 +71,28 @@ class Sign extends Base\Command
     }
 
     /**
-     * Sign a cabin
+     * Common signing process. User selects key, provides password.
      *
      * @param array $manifest
-     * @param string $path
-     * @param array $args
+     * @return SignatureSecretKey
+     * @throws \Exception
      */
-    protected function signCabin(array $manifest, string $path, array $args = [])
-    {
-        /** @todo write this */
-    }
-    
-    /**
-     * Sign a gadget
-     * 
-     * @param array $manifest
-     * @param string $path
-     * @param array $args
-     */
-    protected function signGadget(array $manifest, string $path, array $args = [])
+    protected function signPreamble(array $manifest): SignatureSecretKey
     {
         $HTAB = \str_repeat(' ', \intdiv(self::TAB_SIZE, 2));
-        
-        $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
+
         $supplier_name = $manifest['supplier'];
-        
+
         if (!\array_key_exists('suppliers', $this->config)) {
             echo 'You are not authenticated for any suppliers.', "\n";
             exit(255);
         }
         if (!\array_key_exists($supplier_name, $this->config['suppliers'])) {
-            echo 'Check the supplier in gadget.json (', $supplier_name, 
-                '). Otherwise, you might need to log in.', "\n";
+            echo 'Check the supplier in gadget.json (', $supplier_name,
+            '). Otherwise, you might need to log in.', "\n";
             exit(255);
         }
-        
+
         $supplier = $this->config['suppliers'][$supplier_name];
         $numKeys = \count($supplier['signing_keys']);
         if ($numKeys > 1) {
@@ -135,12 +120,11 @@ class Sign extends Base\Command
         } else {
             $supplierKey = $supplier['signing_keys'][0];
         }
-        
+
         if (empty($supplierKey['salt'])) {
             echo 'Salt not found for this key.', "\n";
             exit(255);
         }
-        
         $password = $this->silentPrompt('Enter Password for Signing Key:');
 
         // Derive and split the SignatureKeyPair from your password and salt
@@ -149,17 +133,63 @@ class Sign extends Base\Command
             $sign_secret = $keyPair->getSecretKey();
             $sign_public = $keyPair->getPublicKey();
 
+        \Sodium\memzero($password);
 
         // Check that the public key we derived from the password matches the one on file
         $pubKey = \Sodium\bin2hex($sign_public->getRawKeyMaterial());
         if (!\hash_equals($supplierKey['public_key'], $pubKey)) {
             // Zero the memory ASAP
             unset($sign_public);
-            echo 'Invalid password', "\n";
+            echo 'Invalid password for selected key', "\n";
             exit(255);
         }
         // Zero the memory ASAP
         unset($sign_public);
+
+        return $sign_secret;
+    }
+
+    /**
+     * Sign a cabin
+     *
+     * @param array $manifest
+     * @param string $path
+     * @param array $args (Optional arguments; currently not used)
+     */
+    protected function signCabin(array $manifest, string $path, array $args = [])
+    {
+        $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
+        $sign_secret = $this->signPreamble($manifest);
+
+        // This is the actual signing part.
+        $signature = File::sign(
+            $path.'/dist/'.$pharName,
+            $sign_secret
+        );
+        // We no longer need this, so unset it. Halite will zero the buffer for us.
+        unset($sign_secret);
+
+        $res = \file_put_contents(
+            $path.'/dist/'.$pharName.'.ed25519.sig',
+            $signature
+        );
+        if ($res !== false) {
+            echo 'Signed: ', $path, '/dist/', $pharName, '.ed25519.sig', "\n";
+            exit(0);
+        }
+    }
+    
+    /**
+     * Sign a gadget
+     * 
+     * @param array $manifest
+     * @param string $path
+     * @param array $args (Optional arguments; currently not used)
+     */
+    protected function signGadget(array $manifest, string $path, array $args = [])
+    {
+        $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
+        $sign_secret = $this->signPreamble($manifest);
 
         // This is the actual signing part.
         $signature = File::sign(
@@ -188,6 +218,24 @@ class Sign extends Base\Command
      */
     protected function signMotif(array $manifest, string $path, array $args = [])
     {
-        /** @todo write this */
+        $zipName = $manifest['supplier'].'.'.$manifest['name'].'.zip';
+        $sign_secret = $this->signPreamble($manifest);
+
+        // This is the actual signing part.
+        $signature = File::sign(
+            $path.'/dist/'.$zipName,
+            $sign_secret
+        );
+        // We no longer need this, so unset it. Halite will zero the buffer for us.
+        unset($sign_secret);
+
+        $res = \file_put_contents(
+            $path.'/dist/'.$zipName.'.ed25519.sig',
+            $signature
+        );
+        if ($res !== false) {
+            echo 'Signed: ', $path, '/dist/', $zipName, '.ed25519.sig', "\n";
+            exit(0);
+        }
     }
 }
