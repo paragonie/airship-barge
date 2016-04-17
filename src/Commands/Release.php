@@ -72,7 +72,7 @@ class Release extends Base\Command
                 \file_get_contents($path . '/motif.json'),
                 true
             );
-            if ($this->motifSignatureCheck($path, $manifest)) {
+            if ($this->zipSignatureCheck($path, $manifest)) {
                 if ($this->versionCheck($manifest)) {
                     $this->pushMotif(
                         $path,

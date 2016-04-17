@@ -179,6 +179,8 @@ class Keygen extends Base\Command
             [
                 'date_generated' =>
                     $newKey['date_generated'],
+                'supplier' =>
+                    $supplier,
                 'public_key' =>
                     $newKey['public_key']
             ]
@@ -228,7 +230,10 @@ class Keygen extends Base\Command
                 // Okay, let's cancel.
                 throw new \Exception('Aborted.');
             }
-            $masterKeyPair = KeyFactory::deriveSignatureKeyPair($password, $masterSalt);
+            $masterKeyPair = KeyFactory::deriveSignatureKeyPair(
+                $password,
+                $masterSalt
+            );
 
             // We must verify the public key matches:
             $masterPublicKey = $masterKeyPair->getPublicKey();
@@ -237,6 +242,8 @@ class Keygen extends Base\Command
                 \Sodium\hex2bin($signingKey['public_key'])
             )) {
                 $masterSecretKey = $masterKeyPair->getSecretKey();
+
+                // Setting $signature exits the loop
                 $signature = Asymmetric::sign(
                     $messageToSign,
                     $masterSecretKey
