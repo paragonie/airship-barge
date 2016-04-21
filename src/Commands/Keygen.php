@@ -12,7 +12,7 @@ class Keygen extends Base\Command
     public $essential = false;
     public $name = 'Key Generator';
     public $description = 'Generate a new signing key.';
-    public $display = 3;
+    public $display = 4;
     
     /**
      * Execute the keygen command
@@ -149,8 +149,24 @@ class Keygen extends Base\Command
             'type' => $key_type
         ];
 
+        // This is the message we are signing.
+        $message = \json_encode(
+            [
+                'action' =>
+                    'CREATE',
+                'date_generated' =>
+                    $new_key['date_generated'],
+                'public_key' =>
+                    $new_key['public_key'],
+                'supplier' =>
+                    $supplier,
+                'type' =>
+                    $new_key['type']
+            ]
+        );
+
         if ($has_master) {
-            list($masterSig, $masterPubKey) = $this->signNewKeyWithMasterKey($supplier, $new_key);
+            list($masterSig, $masterPubKey) = $this->signNewKeyWithMasterKey($supplier, $message);
         } else {
             // This is our first key, so we don't need it.
             $masterSig = '';
@@ -161,31 +177,19 @@ class Keygen extends Base\Command
         $this->config['suppliers'][$supplier]['signing_keys'][] = $new_key;
         
         // Send the public kay (and, maybe, the salt) to the Skyport.
-        $this->sendToSkyport($supplier, $new_key, $masterSig, $masterPubKey);
+        $this->sendToSkyport($supplier, $new_key, $message, $masterSig, $masterPubKey);
     }
 
     /**
      * Sign the new key with our current master key
      *
      * @param string $supplier
-     * @param array $newKey
+     * @param string $messageToSign
      * @return string[]
      * @throws \Exception
      */
-    protected function signNewKeyWithMasterKey(string $supplier, array $newKey): array
+    protected function signNewKeyWithMasterKey(string $supplier, string $messageToSign): array
     {
-        // This is the message we are signing.
-        $messageToSign = \json_encode(
-            [
-                'date_generated' =>
-                    $newKey['date_generated'],
-                'supplier' =>
-                    $supplier,
-                'public_key' =>
-                    $newKey['public_key']
-            ]
-        );
-
         $master_keys = [];
         foreach ($this->config['suppliers'][$supplier]['signing_keys'] as $key) {
             if ($key['type'] === 'master' && !empty($key['salt'])) {
@@ -263,6 +267,7 @@ class Keygen extends Base\Command
      * 
      * @param string $supplier
      * @param array $data
+     * @param string $message
      * @param string $masterSignature
      * @param string $masterPublicKey
      * @return array
@@ -270,6 +275,7 @@ class Keygen extends Base\Command
     protected function sendToSkyport(
         string $supplier,
         array $data = [],
+        string $message,
         string $masterSignature,
         string $masterPublicKey
     ): array {
@@ -278,6 +284,7 @@ class Keygen extends Base\Command
         $postData = [
             'token' => $this->getToken($supplier),
             'date_generated' => $data['date_generated'],
+            'message' => $message,
             'publickey' => $data['public_key'],
             'type' => $data['type']
         ];
