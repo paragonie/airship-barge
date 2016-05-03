@@ -145,6 +145,8 @@ class Keygen extends Base\Command
             'date_generated' => \date('Y-m-d\TH:i:s'),
             'store_in_cloud' => $store_in_cloud,
             'salt' => \Sodium\bin2hex($salt),
+                // See sendToSkyport(); the salt isn't sent unless you explicitly
+                // opt for it to be sent.
             'public_key' => \Sodium\bin2hex($sign_public->getRawKeyMaterial()),
             'type' => $key_type
         ];

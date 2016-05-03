@@ -162,7 +162,12 @@ class Key extends Keygen
                 \Sodium\hex2bin($masterKey['salt'])
             );
             \Sodium\memzero($password);
-            $masterPublicKeyString = \Sodium\bin2hex($masterKeyPair->getPublicKey()->getRawKeyMaterial());
+
+            $masterPublicKeyString = \Sodium\bin2hex(
+                $masterKeyPair
+                    ->getPublicKey()
+                    ->getRawKeyMaterial()
+            );
             $iter = true;
         } while (!\hash_equals($masterKey['public_key'], $masterPublicKeyString));
 
