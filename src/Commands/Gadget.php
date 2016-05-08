@@ -151,11 +151,11 @@ class Gadget extends Proto\Init
 
         // Auto-update trigger
         \file_put_contents(
-            $basePath.'/'.$project_name.'/update_trigger.php',
+            $basePath.'/'.$project_name.'/src/update_trigger.php',
             '<?php' . "\n" .
-            '$metadata = \Airship\loadJSON(__DIR__."gadget.json");'."\n".
+            '$metadata = \Airship\loadJSON(\dirname(__DIR__) . "/gadget.json");'."\n".
             'if (\\Airship\\expand_version($previous_metadata[\'version\']) <= \\Airship\\expand_version(\'0.0.1\')) {'."\n".
-            '    require_once __DIR__."/src/Updates/release-0-0-1.php'."\n".
+            '    require_once __DIR__."/Updates/release-0-0-1.php'."\n".
             '}'."\n\n"
         );
     }
