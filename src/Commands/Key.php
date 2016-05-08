@@ -159,7 +159,9 @@ class Key extends Keygen
             }
             $masterKeyPair = KeyFactory::deriveSignatureKeyPair(
                 $password,
-                \Sodium\hex2bin($masterKey['salt'])
+                \Sodium\hex2bin($masterKey['salt']),
+                false,
+                KeyFactory::SENSITIVE
             );
             \Sodium\memzero($password);
 
@@ -257,5 +259,6 @@ class Key extends Keygen
                 return $keys[$idx - 1];
             }
         }
+        throw new \Exception('Aborted.');
     }
 }

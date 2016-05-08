@@ -30,12 +30,11 @@ class Build extends Base\Command
                 \file_get_contents($path.'/cabin.json'),
                 true
             );
-            $manifest['commit'] = $this->getGitCommitHash($path);
-            return $this->buildCabin(
-                $path,
-                $manifest,
-                \array_slice($args, 1)
-            );
+            $commit = $this->getGitCommitHash($path);
+            $manifest['commit'] = !empty($commit)
+                ? $commit
+                : null;
+            return $this->buildCabin($path, $manifest);
         }
 
         // Gadgets
@@ -44,12 +43,11 @@ class Build extends Base\Command
                 \file_get_contents($path.'/gadget.json'),
                 true
             );
-            $manifest['commit'] = $this->getGitCommitHash($path);
-            return $this->buildGadget(
-                $path,
-                $manifest,
-                \array_slice($args, 1)
-            );
+            $commit = $this->getGitCommitHash($path);
+            $manifest['commit'] = !empty($commit)
+                ? $commit
+                : null;
+            return $this->buildGadget($path, $manifest);
         }
 
         // Motifs
@@ -58,14 +56,14 @@ class Build extends Base\Command
                 \file_get_contents($path.'/motif.json'),
                 true
             );
-            $manifest['commit'] = $this->getGitCommitHash($path);
-            return $this->buildMotif(
-                $path,
-                $manifest,
-                \array_slice($args, 1)
-            );
+            $commit = $this->getGitCommitHash($path);
+            $manifest['commit'] = !empty($commit)
+                ? $commit
+                : null;
+            return $this->buildMotif($path, $manifest);
         }
         echo 'Unknown project type!', "\n";
+        exit(255);
     }
 
     /**
@@ -73,12 +71,10 @@ class Build extends Base\Command
      *
      * @param string $path
      * @param array $manifest
-     * @param array $args
      */
     protected function buildCabin(
         string $path,
-        array $manifest = [],
-        array $args = []
+        array $manifest = []
     ) {
         // Step One -- Let's build our .phar file
         $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
@@ -114,12 +110,10 @@ class Build extends Base\Command
      *
      * @param string $path
      * @param array $manifest
-     * @param array $args
      */
     protected function buildGadget(
         string $path,
-        array $manifest = [],
-        array $args = []
+        array $manifest = []
     ) {
         // Step One -- Let's build our .phar file
         $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
@@ -155,12 +149,10 @@ class Build extends Base\Command
      *
      * @param string $path
      * @param array $manifest
-     * @param array $args
      */
     protected function buildMotif(
         string $path,
-        array $manifest = [],
-        array $args = []
+        array $manifest = []
     ) {
         // Step One -- Let's build our .zip file
         $zipName = $manifest['supplier'].'.'.$manifest['name'].'.zip';

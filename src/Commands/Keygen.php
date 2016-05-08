@@ -44,7 +44,7 @@ class Keygen extends Base\Command
             $key_type = 'master';
         } else {
             $has_master = true;
-            echo 'Please enter the key type you would like to generate (master, sub).', "\n";
+            echo 'Please enter the key type you would like to generate (master, signing).', "\n";
             do {
                 $key_type = $this->prompt('Key type: ');
                 switch ($key_type) {
@@ -55,13 +55,14 @@ class Keygen extends Base\Command
                         $key_type = 'master';
                         break;
                     case 's':
+                    case 'secondary':
                     case 'sub':
                     case 'subkey':
-                    case 'secondary':
-                        $key_type = 'sub';
+                    case 'signing':
+                        $key_type = 'signing';
                         break;
                     default:
-                        echo 'Acceptable key types: master, sub', "\n";
+                        echo 'Acceptable key types: master, signing', "\n";
                         $key_type = null;
                 }
             } while (empty($key_type));
@@ -129,10 +130,17 @@ class Keygen extends Base\Command
         } while (empty($password));
         
         echo 'Generating signing key...';
-        
+
+        if ($key_type === 'master') {
+            $sign_level = KeyFactory::SENSITIVE;
+        } else {
+            $sign_level = KeyFactory::MODERATE;
+        }
         $keyPair = KeyFactory::deriveSignatureKeyPair(
             $password,
-            $salt
+            $salt,
+            false,
+            $sign_level
         );
         $sign_public = $keyPair->getPublicKey();
         echo 'DONE!', "\n";

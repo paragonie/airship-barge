@@ -34,23 +34,16 @@ class Sign extends Base\Command
                 \file_get_contents($path.'/cabin.json'),
                 true
             );
-            $this->signCabin(
-                $manifest,
-                $path,
-                \array_slice($args, 1)
-            );
+            return $this->signCabin($manifest, $path);
         }
+
         // Gadgets:
         if (\is_readable($path.'/gadget.json')) {
             $manifest = \json_decode(
                 \file_get_contents($path.'/gadget.json'),
                 true
             );
-            $this->signGadget(
-                $manifest,
-                $path,
-                \array_slice($args, 1)
-            );
+            return $this->signGadget($manifest, $path);
         }
 
         // Motifs:
@@ -59,11 +52,7 @@ class Sign extends Base\Command
                 \file_get_contents($path.'/motif.json'),
                 true
             );
-            $this->signMotif(
-                $manifest,
-                $path,
-                \array_slice($args, 1)
-            );
+            return $this->signMotif($manifest, $path);
         }
 
         echo 'Could not find manifest file.', "\n";
@@ -129,7 +118,22 @@ class Sign extends Base\Command
 
         // Derive and split the SignatureKeyPair from your password and salt
         $salt = \Sodium\hex2bin($supplierKey['salt']);
-        $keyPair = KeyFactory::deriveSignatureKeyPair($password, $salt);
+        switch ($supplierKey['type']) {
+            case 'signing':
+                $type = KeyFactory::MODERATE;
+                break;
+            case 'master':
+                $type = KeyFactory::SENSITIVE;
+                break;
+            default:
+                $type = KeyFactory::INTERACTIVE;
+        }
+        $keyPair = KeyFactory::deriveSignatureKeyPair(
+            $password,
+            $salt,
+            false,
+            $type
+        );
             $sign_secret = $keyPair->getSecretKey();
             $sign_public = $keyPair->getPublicKey();
 
@@ -154,9 +158,8 @@ class Sign extends Base\Command
      *
      * @param array $manifest
      * @param string $path
-     * @param array $args (Optional arguments; currently not used)
      */
-    protected function signCabin(array $manifest, string $path, array $args = [])
+    protected function signCabin(array $manifest, string $path)
     {
         $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         $sign_secret = $this->signPreamble($manifest);
@@ -184,9 +187,8 @@ class Sign extends Base\Command
      * 
      * @param array $manifest
      * @param string $path
-     * @param array $args (Optional arguments; currently not used)
      */
-    protected function signGadget(array $manifest, string $path, array $args = [])
+    protected function signGadget(array $manifest, string $path)
     {
         $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         $sign_secret = $this->signPreamble($manifest);
@@ -214,9 +216,8 @@ class Sign extends Base\Command
      *
      * @param array $manifest
      * @param string $path
-     * @param array $args
      */
-    protected function signMotif(array $manifest, string $path, array $args = [])
+    protected function signMotif(array $manifest, string $path)
     {
         $zipName = $manifest['supplier'].'.'.$manifest['name'].'.zip';
         $sign_secret = $this->signPreamble($manifest);
