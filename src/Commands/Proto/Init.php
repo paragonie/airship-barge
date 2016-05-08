@@ -6,6 +6,8 @@ use \Airship\Barge as Base;
 
 abstract class Init extends Base\Command
 {
+    public $descriptionPrompt = 'Project description: ';
+
     /**
      * Execute the build command
      *
@@ -47,7 +49,7 @@ abstract class Init extends Base\Command
             }
         } while (empty($project_name));
         
-        $description = $this->prompt('Project description: ');
+        $description = $this->prompt($this->descriptionPrompt);
         if (empty($description)) {
             $description = 'Not provided';
         }
