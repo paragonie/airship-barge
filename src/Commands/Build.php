@@ -25,6 +25,18 @@ class Build extends Base\Command
             : \getcwd();
 
         // Cabins
+        if (\is_readable($path.'/cabin.json')) {
+            $manifest = \json_decode(
+                \file_get_contents($path.'/cabin.json'),
+                true
+            );
+            $manifest['commit'] = $this->getGitCommitHash($path);
+            return $this->buildCabin(
+                $path,
+                $manifest,
+                \array_slice($args, 1)
+            );
+        }
 
         // Gadgets
         if (\is_readable($path.'/gadget.json')) {
@@ -32,7 +44,8 @@ class Build extends Base\Command
                 \file_get_contents($path.'/gadget.json'),
                 true
             );
-            $this->buildGadget(
+            $manifest['commit'] = $this->getGitCommitHash($path);
+            return $this->buildGadget(
                 $path,
                 $manifest,
                 \array_slice($args, 1)
@@ -40,12 +53,65 @@ class Build extends Base\Command
         }
 
         // Motifs
-        
+        if (\is_readable($path.'/motif.json')) {
+            $manifest = \json_decode(
+                \file_get_contents($path.'/motif.json'),
+                true
+            );
+            $manifest['commit'] = $this->getGitCommitHash($path);
+            return $this->buildMotif(
+                $path,
+                $manifest,
+                \array_slice($args, 1)
+            );
+        }
+        echo 'Unknown project type!', "\n";
     }
-    
+
+    /**
+     * Build a Cabin
+     *
+     * @param string $path
+     * @param array $manifest
+     * @param array $args
+     */
+    protected function buildCabin(
+        string $path,
+        array $manifest = [],
+        array $args = []
+    ) {
+        // Step One -- Let's build our .phar file
+        $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
+        try {
+            if (\file_exists($path.'/dist/'.$pharName)) {
+                \unlink($path.'/dist/'.$pharName);
+            }
+            if (\file_exists($path.'/dist/'.$pharName.'.ed25519.sig')) {
+                \unlink($path.'/dist/'.$pharName.'.ed25519.sig');
+            }
+            $phar = new \Phar(
+                $path.'/dist/'.$pharName,
+                \FilesystemIterator::CURRENT_AS_FILEINFO | \FilesystemIterator::KEY_AS_FILENAME,
+                $pharName
+            );
+        } catch (\UnexpectedValueException $e) {
+            echo 'Could not open .phar', "\n";
+            exit(255); // Return an error flag
+        }
+        $phar->buildFromDirectory($path);
+        $phar->setStub(
+            $phar->createDefaultStub('autoload.php', 'autoload.php')
+        );
+        $phar->setMetadata($manifest);
+        echo 'Cabin built.', "\n",
+            $path.'/dist/'.$pharName, "\n",
+        'Don\'t forget to sign it!', "\n";
+        exit(0); // Return a success flag
+    }
+
     /**
      * Build a Gadget
-     * 
+     *
      * @param string $path
      * @param array $manifest
      * @param array $args
@@ -56,18 +122,18 @@ class Build extends Base\Command
         array $args = []
     ) {
         // Step One -- Let's build our .phar file
-        $pharname = $manifest['supplier'].'.'.$manifest['name'].'.phar';
+        $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         try {
-            if (\file_exists($path.'/dist/'.$pharname)) {
-                \unlink($path.'/dist/'.$pharname);
+            if (\file_exists($path.'/dist/'.$pharName)) {
+                \unlink($path.'/dist/'.$pharName);
             }
-            if (\file_exists($path.'/dist/'.$pharname.'.ed25519.sig')) {
-                \unlink($path.'/dist/'.$pharname.'.ed25519.sig');
+            if (\file_exists($path.'/dist/'.$pharName.'.ed25519.sig')) {
+                \unlink($path.'/dist/'.$pharName.'.ed25519.sig');
             }
             $phar = new \Phar(
-                $path.'/dist/'.$pharname,
+                $path.'/dist/'.$pharName,
                 \FilesystemIterator::CURRENT_AS_FILEINFO | \FilesystemIterator::KEY_AS_FILENAME,
-                $pharname
+                $pharName
             );
         } catch (\UnexpectedValueException $e) {
             echo 'Could not open .phar', "\n";
@@ -79,8 +145,48 @@ class Build extends Base\Command
         );
         $phar->setMetadata($manifest);
         echo 'Gadget built.', "\n",
-            $path.'/dist/'.$pharname, "\n",
-            'Don\'t forget to sign it!', "\n";
+            $path.'/dist/'.$pharName, "\n",
+        'Don\'t forget to sign it!', "\n";
+        exit(0); // Return a success flag
+    }
+
+    /**
+     * Build a Motif
+     *
+     * @param string $path
+     * @param array $manifest
+     * @param array $args
+     */
+    protected function buildMotif(
+        string $path,
+        array $manifest = [],
+        array $args = []
+    ) {
+        // Step One -- Let's build our .zip file
+        $zipName = $manifest['supplier'].'.'.$manifest['name'].'.zip';
+        if (\file_exists($path.'/dist/'.$zipName)) {
+            \unlink($path.'/dist/'.$zipName);
+        }
+        if (\file_exists($path.'/dist/'.$zipName.'.ed25519.sig')) {
+            \unlink($path.'/dist/'.$zipName.'.ed25519.sig');
+        }
+        $zip = new \ZipArchive();
+        $flags = \ZipArchive::CREATE | \ZipArchive::OVERWRITE;
+
+        // Open the zip for writing
+        if ($zip->open($path.'/dist/'.$zipName, $flags) !== true) {
+            echo 'Could not open .zip', "\n";
+            exit(255); // Return an error flag
+        }
+        $zipOpts = [
+            'remove_all_path' => true
+        ];
+        $zip->addGlob($path . '/src/*', 0, $zipOpts);
+        $zip->setArchiveComment(\json_encode($manifest));
+        $zip->close();
+        echo 'Motif built.', "\n",
+            $path.'/dist/'.$zipName, "\n",
+        'Don\'t forget to sign it!', "\n";
         exit(0); // Return a success flag
     }
 }

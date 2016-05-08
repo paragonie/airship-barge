@@ -37,27 +37,6 @@ abstract class Command
      * Execute a command
      */
     abstract public function fire(array $args = []);
-
-    /**
-     * Return the size of hte current terminal window
-     *
-     * @return array (int, int)
-     */
-    public function getScreenSize()
-    {
-        $output = [];
-        \preg_match_all(
-            "/rows.([0-9]+);.columns.([0-9]+);/",
-            \strtolower(\exec('stty -a |grep columns')),
-            $output
-        );
-        if (\sizeof($output) === 3) {
-           return [
-               'width' => $output[2][0],
-               'height' => $output[1][0]
-           ];
-        }
-    }
     
     /**
      * Return a command
@@ -79,24 +58,6 @@ abstract class Command
     }
     
     /**
-     * Get a token for HTTP requests
-     * 
-     * @param string $supplier
-     * @return string|null
-     */
-    public function getToken($supplier)
-    {
-        if (!isset($this->config['suppliers'][$supplier])) {
-            return null;
-        }
-        if (empty($this->config['suppliers'][$supplier]['token'])) {
-            return null;
-        }
-        $v = $this->config['suppliers'][$supplier]['token'];
-        return $v['selector'].':'.$v['validator'];
-    }
-    
-    /**
      * Return a command (statically callable)
      * 
      * @param string $name
@@ -114,6 +75,68 @@ abstract class Command
             return self::$cache[$name];
         }
         return new $_name;
+    }
+
+    /**
+     * Grab the git commit hash
+     *
+     * @param string $projectRoot
+     * @return string
+     * @throws \Exception
+     */
+    public static function getGitCommitHash(string $projectRoot): string
+    {
+        if (!\is_dir($projectRoot . '/.git')) {
+            return '';
+        }
+        $command = "/usr/bin/env bash -c 'echo OK'";
+        if (\rtrim(\shell_exec($command)) !== 'OK') {
+            throw new \Exception("Can't invoke bash");
+        }
+        $dir = \getcwd();
+        \chdir($projectRoot);
+        $hash = \rtrim(\shell_exec("git rev-parse HEAD"));
+        \chdir($dir);
+        return $hash;
+    }
+
+    /**
+     * Return the size of hte current terminal window
+     *
+     * @return array (int, int)
+     */
+    public function getScreenSize()
+    {
+        $output = [];
+        \preg_match_all(
+            "/rows.([0-9]+);.columns.([0-9]+);/",
+            \strtolower(\exec('stty -a |grep columns')),
+            $output
+        );
+        if (\sizeof($output) === 3) {
+            return [
+                'width' => $output[2][0],
+                'height' => $output[1][0]
+            ];
+        }
+    }
+
+    /**
+     * Get a token for HTTP requests
+     *
+     * @param string $supplier
+     * @return string|null
+     */
+    public function getToken($supplier)
+    {
+        if (!isset($this->config['suppliers'][$supplier])) {
+            return null;
+        }
+        if (empty($this->config['suppliers'][$supplier]['token'])) {
+            return null;
+        }
+        $v = $this->config['suppliers'][$supplier]['token'];
+        return $v['selector'].':'.$v['validator'];
     }
 
     /**
