@@ -289,7 +289,7 @@ class Keygen extends Base\Command
         string $masterSignature,
         string $masterPublicKey
     ): array {
-        $skyport = $this->getSkyport();
+        list ($skyport, $publicKey) = $this->getSkyport();
         
         $postData = [
             'token' => $this->getToken($supplier),
@@ -316,11 +316,11 @@ class Keygen extends Base\Command
             ];
         }
         
-        $response = Base\HTTP::post(
+        return Base\HTTP::postSignedJSON(
             $skyport . 'key/add',
+            $publicKey,
             $postData
         );
-        return \json_decode($response, true);
     }
     
     /**

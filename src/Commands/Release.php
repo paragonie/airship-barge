@@ -38,8 +38,7 @@ class Release extends Base\Command
                 if ($this->versionCheck($manifest)) {
                     $this->pushCabin(
                         $path,
-                        $manifest,
-                        \array_slice($args, 1)
+                        $manifest
                     );
                 }
             } else {
@@ -57,8 +56,7 @@ class Release extends Base\Command
                 if ($this->versionCheck($manifest)) {
                     $this->pushGadget(
                         $path,
-                        $manifest,
-                        \array_slice($args, 1)
+                        $manifest
                     );
                 }
             } else {
@@ -76,8 +74,7 @@ class Release extends Base\Command
                 if ($this->versionCheck($manifest)) {
                     $this->pushMotif(
                         $path,
-                        $manifest,
-                        \array_slice($args, 1)
+                        $manifest
                     );
                 }
             } else {
@@ -90,40 +87,36 @@ class Release extends Base\Command
      *
      * @param string $path
      * @param array $manifest
-     * @param array $args
      */
     protected function pushCabin(
         string $path,
-        array $manifest = [],
-        array $args = []
+        array $manifest = []
     ) {
         $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         $signature = $pharName.'.ed25519.sig';
 
-        $skyport = $this->getSkyport();
+        list ($skyport, $publicKey) = $this->getSkyport();
 
-        $result = \json_decode(
-            Base\HTTP::post(
-                $skyport.'upload',
-                [
-                    'token' => $this->getToken($manifest['supplier']),
-                    'supplier' => $manifest['supplier'],
-                    'package' => $manifest['name'],
-                    'version' => isset($manifest['version'])
-                        ? $manifest['version']
-                        : '',
-                    'type' => 'cabin',
-                    'phar' => new \CURLFile(
-                        $path.'/dist/'.$pharName,
-                        'application/octet-stream'
-                    ),
-                    'signature' => new \CURLFile(
-                        $path.'/dist/'.$signature,
-                        'application/octet-stream'
-                    )
-                ]
-            ),
-            true
+        $result = Base\HTTP::postSignedJSON(
+            $skyport.'upload',
+            $publicKey,
+            [
+                'token' => $this->getToken($manifest['supplier']),
+                'supplier' => $manifest['supplier'],
+                'package' => $manifest['name'],
+                'version' => isset($manifest['version'])
+                    ? $manifest['version']
+                    : '',
+                'type' => 'cabin',
+                'phar' => new \CURLFile(
+                    $path.'/dist/'.$pharName,
+                    'application/octet-stream'
+                ),
+                'signature' => new \CURLFile(
+                    $path.'/dist/'.$signature,
+                    'application/octet-stream'
+                )
+            ]
         );
 
         if (isset($result['error'])) {
@@ -140,40 +133,36 @@ class Release extends Base\Command
      * 
      * @param string $path
      * @param array $manifest
-     * @param array $args
      */
     protected function pushGadget(
         string $path,
-        array $manifest = [],
-        array $args = []
+        array $manifest = []
     ) {
         $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         $signature = $pharName.'.ed25519.sig';
+
+        list ($skyport, $publicKey) = $this->getSkyport();
         
-        $skyport = $this->getSkyport();
-        
-        $result = \json_decode(
-            Base\HTTP::post(
-                $skyport.'upload',
-                [
-                    'token' => $this->getToken($manifest['supplier']),
-                    'supplier' => $manifest['supplier'],
-                    'package' => $manifest['name'],
-                    'version' => isset($manifest['version'])
-                        ? $manifest['version']
-                        : '',
-                    'type' => 'gadget',
-                    'phar' => new \CURLFile(
-                        $path.'/dist/'.$pharName,
-                        'application/octet-stream'
-                    ),
-                    'signature' => new \CURLFile(
-                        $path.'/dist/'.$signature,
-                        'application/octet-stream'
-                    )
-                ]
-            ),
-            true
+        $result = Base\HTTP::postSignedJSON(
+            $skyport.'upload',
+            $publicKey,
+            [
+                'token' => $this->getToken($manifest['supplier']),
+                'supplier' => $manifest['supplier'],
+                'package' => $manifest['name'],
+                'version' => isset($manifest['version'])
+                    ? $manifest['version']
+                    : '',
+                'type' => 'gadget',
+                'phar' => new \CURLFile(
+                    $path.'/dist/'.$pharName,
+                    'application/octet-stream'
+                ),
+                'signature' => new \CURLFile(
+                    $path.'/dist/'.$signature,
+                    'application/octet-stream'
+                )
+            ]
         );
         
         if (isset($result['error'])) {
@@ -190,40 +179,36 @@ class Release extends Base\Command
      *
      * @param string $path
      * @param array $manifest
-     * @param array $args
      */
     protected function pushMotif(
         string $path,
-        array $manifest = [],
-        array $args = []
+        array $manifest = []
     ) {
         $zipName = $manifest['supplier'].'.'.$manifest['name'].'.zip';
         $signature = $zipName.'.ed25519.sig';
 
-        $skyport = $this->getSkyport();
+        list ($skyport, $publicKey) = $this->getSkyport();
 
-        $result = \json_decode(
-            Base\HTTP::post(
-                $skyport.'upload',
-                [
-                    'token' => $this->getToken($manifest['supplier']),
-                    'supplier' => $manifest['supplier'],
-                    'package' => $manifest['name'],
-                    'version' => isset($manifest['version'])
-                        ? $manifest['version']
-                        : '',
-                    'type' => 'gadget',
-                    'zip' => new \CURLFile(
-                        $path.'/dist/'.$zipName,
-                        'application/octet-stream'
-                    ),
-                    'signature' => new \CURLFile(
-                        $path.'/dist/'.$signature,
-                        'application/octet-stream'
-                    )
-                ]
-            ),
-            true
+        $result = Base\HTTP::postSignedJSON(
+            $skyport.'upload',
+            $publicKey,
+            [
+                'token' => $this->getToken($manifest['supplier']),
+                'supplier' => $manifest['supplier'],
+                'package' => $manifest['name'],
+                'version' => isset($manifest['version'])
+                    ? $manifest['version']
+                    : '',
+                'type' => 'gadget',
+                'zip' => new \CURLFile(
+                    $path.'/dist/'.$zipName,
+                    'application/octet-stream'
+                ),
+                'signature' => new \CURLFile(
+                    $path.'/dist/'.$signature,
+                    'application/octet-stream'
+                )
+            ]
         );
 
         if (isset($result['error'])) {
@@ -243,16 +228,14 @@ class Release extends Base\Command
      */
     protected function versionCheck(array $manifest = [])
     {
-        $skyport = $this->getSkyport();
+        list ($skyport, $publicKey) = $this->getSkyport();
         
-        $result = \json_decode(
-            Base\HTTP::post(
-                $skyport.'upload/'.$manifest['supplier'].'/'.$manifest['name'],
-                [
-                    'token' => $this->getToken($manifest['supplier'])
-                ]
-            ),
-            true
+        $result = Base\HTTP::post(
+            $skyport.'upload/'.$manifest['supplier'].'/'.$manifest['name'],
+            $publicKey,
+            [
+                'token' => $this->getToken($manifest['supplier'])
+            ]
         );
         if (isset($result['latest'])) {
             if ($result['latest'] !== $manifest['version']) {

@@ -211,7 +211,7 @@ class Key extends Keygen
         string $masterSignature,
         string $masterPublicKey
     ) {
-        $skyport = $this->getSkyport();
+        list ($skyport, $publicKey) = $this->getSkyport();
 
         $postData = [
             'token' => $this->getToken($supplier),
@@ -228,11 +228,11 @@ class Key extends Keygen
         if ($data['store_in_cloud']) {
             $postData['stored_salt'] = $data['salt'];
         }
-        $response = Base\HTTP::post(
+        return Base\HTTP::postSignedJSON(
             $skyport . 'key/revoke',
+            $publicKey,
             $postData
         );
-        return \json_decode($response, true);
     }
 
     /**

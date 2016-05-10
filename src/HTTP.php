@@ -2,6 +2,15 @@
 declare(strict_types=1);
 namespace Airship\Barge;
 
+use \ParagonIE\ConstantTime\{
+    Base64UrlSafe,
+    Binary
+};
+use \ParagonIE\Halite\Asymmetric\{
+    Crypto as Asymmetric,
+    SignaturePublicKey
+};
+
 /**
  * Class HTTP
  *
@@ -11,6 +20,8 @@ namespace Airship\Barge;
  */
 abstract class HTTP
 {
+    const ENCODED_SIGNATURE_LENGTH = 88;
+
     public static $last_ch; // Store the last curl handle here
     
     /**
@@ -35,6 +46,38 @@ abstract class HTTP
         \curl_setopt_array(self::$last_ch, $options);
         return \curl_exec(self::$last_ch);
     }
+
+    /**
+     * Get/verify/parse a JSON response
+     *
+     * @param string $url
+     * @param SignaturePublicKey $publicKey
+     * @param array $args
+     * @param array $options
+     * @return array
+     * @throws \Exception
+     */
+    public static function getSignedJSON(
+        string $url,
+        SignaturePublicKey $publicKey,
+        array $args = [],
+        array $options = []
+    ): array {
+        $body = self::get($url, $args, $options);
+        $firstNewLine = \strpos($body, "\n");
+        // There should be a newline immediately after the base64urlsafe-encoded signature
+        if ($firstNewLine !== self::ENCODED_SIGNATURE_LENGTH) {
+            throw new \Exception('Invalid Signature');
+        }
+        $sig = Base64UrlSafe::decode(
+            Binary::safeSubstr($body, 0, 88)
+        );
+        $msg = Binary::safeSubstr($body, 89);
+        if (!Asymmetric::verify($msg, $publicKey, $sig, true)) {
+            throw new \Exception('Invalid Signature');
+        }
+        return \json_decode($msg, true);
+    }
     
     /**
      * Do a simple POST request
@@ -55,5 +98,37 @@ abstract class HTTP
         \curl_setopt(self::$last_ch, CURLOPT_POSTFIELDS, $args);
         \curl_setopt_array(self::$last_ch, $options);
         return \curl_exec(self::$last_ch);
+    }
+
+    /**
+     * Get/verify/parse a JSON response
+     *
+     * @param string $url
+     * @param SignaturePublicKey $publicKey
+     * @param array $args
+     * @param array $options
+     * @return array
+     * @throws \Exception
+     */
+    public static function postSignedJSON(
+        string $url,
+        SignaturePublicKey $publicKey,
+        array $args = [],
+        array $options = []
+    ): array {
+        $body = self::post($url, $args, $options);
+        $firstNewLine = \strpos($body, "\n");
+        // There should be a newline immediately after the base64urlsafe-encoded signature
+        if ($firstNewLine !== self::ENCODED_SIGNATURE_LENGTH) {
+            throw new \Exception('Invalid Signature');
+        }
+        $sig = Base64UrlSafe::decode(
+            Binary::safeSubstr($body, 0, 88)
+        );
+        $msg = Binary::safeSubstr($body, 89);
+        if (!Asymmetric::verify($msg, $publicKey, $sig, true)) {
+            throw new \Exception('Invalid Signature');
+        }
+        return \json_decode($msg, true);
     }
 }

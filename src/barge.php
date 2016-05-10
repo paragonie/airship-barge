@@ -37,7 +37,13 @@ if (\is_readable(AIRSHIP_LOCAL_CONFIG."/config.json")) {
     // Sane defaults
     $config = [
         'skyports' => [
-            'https://airship.paragonie.com/atc/'
+            [
+                'url' =>
+                    'https://airship.paragonie.com/atc/',
+                'public_key' =>
+                    '6386dabb7c57006fbbd5092d77d34398332f475f7340ae32d02cda6bc4295da6'
+            ]
+
         ],
         'vendors' => []
     ];

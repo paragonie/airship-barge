@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace Airship\Barge;
 
+use ParagonIE\Halite\Asymmetric\SignaturePublicKey;
+
 abstract class Command
 {
     const TAB_SIZE = 8;
@@ -47,14 +49,7 @@ abstract class Command
      */
     public function getCommandObject($name, $cache = true): Command
     {
-        $obj = self::getCommandStatic($name, $cache);
-        if (!empty($this->db) && !empty($this->bc)) {
-            $obj->setStorage(
-                $this->db,
-                $this->bc
-            );
-        }
-        return $obj;
+        return self::getCommandStatic($name, $cache);
     }
     
     /**
@@ -119,6 +114,7 @@ abstract class Command
                 'height' => $output[1][0]
             ];
         }
+        return [0, 0];
     }
 
     /**
@@ -212,18 +208,30 @@ abstract class Command
      * @return array
      * @throws \Exception
      */
-    final protected function getSkyport()
+    final protected function getSkyport(): array
     {
         $sp = $this->config['skyports'];
         if (empty($sp)) {
             throw new \Exception("No skyports configured");
         }
         if (\count($sp) === 1) {
-            return \array_shift($sp);
+            $ret = \array_shift($sp);
+            return [
+                $ret['url'],
+                new SignaturePublicKey(
+                    \Sodium\bin2hex($ret['public_key'])
+                )
+            ];
         }
         $k = \array_keys($sp);
         $i = $k[\random_int(0, \count($sp) - 1)];
-        return $sp[$i];
+        $ret = $sp[$i];
+        return [
+            $ret['url'],
+            new SignaturePublicKey(
+                \Sodium\bin2hex($ret['public_key'])
+            )
+        ];
     }
     
     /**

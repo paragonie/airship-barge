@@ -26,17 +26,15 @@ class Login extends Base\Command
         
         $password = $this->silentPrompt("Password:");
         
-        $skyport = $this->getSkyport();
+        list ($skyport, $publicKey) = $this->getSkyport();
         
-        $result = \json_decode(
-            Base\HTTP::post(
-                $skyport.'login',
-                [
-                    'name' => $username,
-                    'password' => $password
-                ]
-            ),
-            true
+        $result = Base\HTTP::postSignedJSON(
+            $skyport.'login',
+            $publicKey,
+            [
+                'name' => $username,
+                'password' => $password
+            ]
         );
 
         // Wipe from memory as soon as we're done using it.
