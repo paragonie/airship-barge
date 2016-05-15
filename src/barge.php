@@ -123,6 +123,7 @@ foreach (\glob(__DIR__.'/Commands/*.php') as $file) {
             } catch (\Exception $e) {
                 echo $e->getMessage(), "\n";
                 $code = $e->getCode();
+                echo $e->getTraceAsString(). "\n";
                 exit($code > 0 ? $code : 255);
             }
             $exec->saveConfig();

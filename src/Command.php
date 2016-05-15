@@ -219,7 +219,7 @@ abstract class Command
             return [
                 $ret['url'],
                 new SignaturePublicKey(
-                    \Sodium\bin2hex($ret['public_key'])
+                    \Sodium\hex2bin($ret['public_key'])
                 )
             ];
         }
@@ -229,7 +229,7 @@ abstract class Command
         return [
             $ret['url'],
             new SignaturePublicKey(
-                \Sodium\bin2hex($ret['public_key'])
+                \Sodium\hex2bin($ret['public_key'])
             )
         ];
     }

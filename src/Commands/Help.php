@@ -89,6 +89,7 @@ EOBANNER;
         $this->usageInfo($args);
         $w = $this->getScreenSize()['width'];
         echo "\n", \str_repeat('_', $w - 1), "\n";
+        return null;
     }
 
     /**
@@ -303,5 +304,6 @@ EOBANNER;
             echo "\n";
         
         echo "\n";
+        return null;
     }
 }

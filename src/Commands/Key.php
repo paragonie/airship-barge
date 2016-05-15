@@ -9,7 +9,7 @@ use \ParagonIE\Halite\KeyFactory;
 class Key extends Keygen
 {
     public $essential = false;
-    public $name = 'Key Managmeent';
+    public $name = 'Key Management';
     public $description = 'Manage signing keys';
     public $display = 3;
 

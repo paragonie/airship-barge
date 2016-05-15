@@ -188,6 +188,16 @@ class Keygen extends Base\Command
         
         // Send the public kay (and, maybe, the salt) to the Skyport.
         $this->sendToSkyport($supplier, $new_key, $message, $masterSig, $masterPubKey);
+        /*
+        // DEBUG CODE; DO THIS INSTEAD:
+        $response = $this->sendToSkyport($supplier, $new_key, $message, $masterSig, $masterPubKey);
+        if (!empty($response['status'])) {
+            if ($response['status'] === 'ERROR') {
+                echo "Error message returned!\n";
+                var_dump($response);
+            }
+        }
+        */
     }
 
     /**
@@ -246,7 +256,9 @@ class Keygen extends Base\Command
             }
             $masterKeyPair = KeyFactory::deriveSignatureKeyPair(
                 $password,
-                $masterSalt
+                $masterSalt,
+                false,
+                KeyFactory::SENSITIVE
             );
 
             // We must verify the public key matches:

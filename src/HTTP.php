@@ -95,7 +95,7 @@ abstract class HTTP
         self::$last_ch = \curl_init($url);
         \curl_setopt(self::$last_ch, CURLOPT_RETURNTRANSFER, true);
         \curl_setopt(self::$last_ch, CURLOPT_POST, true);
-        \curl_setopt(self::$last_ch, CURLOPT_POSTFIELDS, $args);
+        \curl_setopt(self::$last_ch, CURLOPT_POSTFIELDS, \http_build_query($args));
         \curl_setopt_array(self::$last_ch, $options);
         return \curl_exec(self::$last_ch);
     }
@@ -117,6 +117,9 @@ abstract class HTTP
         array $options = []
     ): array {
         $body = self::post($url, $args, $options);
+        if (empty($body)) {
+            throw new \Exception('Empty response');
+        }
         $firstNewLine = \strpos($body, "\n");
         // There should be a newline immediately after the base64urlsafe-encoded signature
         if ($firstNewLine !== self::ENCODED_SIGNATURE_LENGTH) {
