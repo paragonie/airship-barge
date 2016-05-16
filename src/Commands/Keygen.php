@@ -155,7 +155,9 @@ class Keygen extends Base\Command
             'salt' => \Sodium\bin2hex($salt),
                 // See sendToSkyport(); the salt isn't sent unless you explicitly
                 // opt for it to be sent.
-            'public_key' => \Sodium\bin2hex($sign_public->getRawKeyMaterial()),
+            'public_key' => \Sodium\bin2hex(
+                $sign_public->getRawKeyMaterial()
+            ),
             'type' => $key_type
         ];
 
