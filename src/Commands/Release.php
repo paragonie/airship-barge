@@ -110,11 +110,13 @@ class Release extends Base\Command
                 'type' => 'cabin',
                 'phar' => new \CURLFile(
                     $path.'/dist/'.$pharName,
-                    'application/octet-stream'
+                    'application/octet-stream',
+                    'phar'
                 ),
                 'signature' => new \CURLFile(
                     $path.'/dist/'.$signature,
-                    'application/octet-stream'
+                    'application/octet-stream',
+                    'signature'
                 )
             ]
         );
@@ -142,7 +144,7 @@ class Release extends Base\Command
         $signature = $pharName.'.ed25519.sig';
 
         list ($skyport, $publicKey) = $this->getSkyport();
-        
+
         $result = Base\HTTP::postSignedJSON(
             $skyport.'upload',
             $publicKey,
@@ -156,16 +158,19 @@ class Release extends Base\Command
                 'type' => 'gadget',
                 'phar' => new \CURLFile(
                     $path.'/dist/'.$pharName,
-                    'application/octet-stream'
+                    'application/octet-stream',
+                    'phar'
                 ),
                 'signature' => new \CURLFile(
                     $path.'/dist/'.$signature,
-                    'application/octet-stream'
+                    'application/octet-stream',
+                    'signature'
                 )
             ]
         );
         
         if (isset($result['error'])) {
+            echo $this->c['red'], 'Server error:', $this->c[''], "\n";
             echo $result['error'], "\n";
             exit(255);
         }
@@ -202,11 +207,13 @@ class Release extends Base\Command
                 'type' => 'gadget',
                 'zip' => new \CURLFile(
                     $path.'/dist/'.$zipName,
-                    'application/octet-stream'
+                    'application/octet-stream',
+                    'zip'
                 ),
                 'signature' => new \CURLFile(
                     $path.'/dist/'.$signature,
-                    'application/octet-stream'
+                    'application/octet-stream',
+                    'signature'
                 )
             ]
         );
@@ -230,8 +237,8 @@ class Release extends Base\Command
     {
         list ($skyport, $publicKey) = $this->getSkyport();
         
-        $result = Base\HTTP::post(
-            $skyport.'upload/'.$manifest['supplier'].'/'.$manifest['name'],
+        $result = Base\HTTP::postSignedJSON(
+            $skyport.'package/'.$manifest['supplier'].'/'.$manifest['name'].'/version',
             $publicKey,
             [
                 'token' => $this->getToken($manifest['supplier'])

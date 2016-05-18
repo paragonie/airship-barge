@@ -82,6 +82,7 @@ class Motif extends Proto\Init
             '{% extends "base.twig" %}' . "\n\n".
             '{% block footer %} No footer for you {% endblock %}'
         );
+        return true;
     }
 
     /**

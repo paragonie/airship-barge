@@ -158,6 +158,7 @@ class Gadget extends Proto\Init
             '    require_once __DIR__."/Updates/release-0-0-1.php'."\n".
             '}'."\n\n"
         );
+        return true;
     }
 
     /**

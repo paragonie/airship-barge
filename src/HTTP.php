@@ -95,7 +95,7 @@ abstract class HTTP
         self::$last_ch = \curl_init($url);
         \curl_setopt(self::$last_ch, CURLOPT_RETURNTRANSFER, true);
         \curl_setopt(self::$last_ch, CURLOPT_POST, true);
-        \curl_setopt(self::$last_ch, CURLOPT_POSTFIELDS, \http_build_query($args));
+        \curl_setopt(self::$last_ch, CURLOPT_POSTFIELDS, $args);
         \curl_setopt_array(self::$last_ch, $options);
         return \curl_exec(self::$last_ch);
     }
