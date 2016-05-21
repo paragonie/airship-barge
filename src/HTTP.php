@@ -95,6 +95,16 @@ abstract class HTTP
         self::$last_ch = \curl_init($url);
         \curl_setopt(self::$last_ch, CURLOPT_RETURNTRANSFER, true);
         \curl_setopt(self::$last_ch, CURLOPT_POST, true);
+        $dontMakeString = false;
+        foreach ($args as $arg) {
+            if ($arg instanceof \CURLFile) {
+                $dontMakeString = true;
+                break;
+            }
+        }
+        if (!$dontMakeString) {
+            $args = \http_build_query($args);
+        }
         \curl_setopt(self::$last_ch, CURLOPT_POSTFIELDS, $args);
         \curl_setopt_array(self::$last_ch, $options);
         return \curl_exec(self::$last_ch);
@@ -118,7 +128,7 @@ abstract class HTTP
     ): array {
         $body = self::post($url, $args, $options);
         if (empty($body)) {
-            throw new \Exception('Empty response');
+            throw new \Exception('Empty response from ' . $url);
         }
         $firstNewLine = \strpos($body, "\n");
         // There should be a newline immediately after the base64urlsafe-encoded signature

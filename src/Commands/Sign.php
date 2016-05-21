@@ -2,6 +2,7 @@
 namespace Airship\Barge\Commands;
 
 use \Airship\Barge as Base;
+use ParagonIE\ConstantTime\Base64UrlSafe;
 use \ParagonIE\Halite\{
     File,
     KeyFactory,
@@ -10,6 +11,7 @@ use \ParagonIE\Halite\{
 
 class Sign extends Base\Command
 {
+    protected $signWithMasterKeys = false;
     public $essential = true;
     public $name = 'Sign';
     public $description = 'Digitally sign the current Gadget.';
@@ -27,6 +29,13 @@ class Sign extends Base\Command
         $path = \count($args) > 0
             ? $args[0]
             : \getcwd();
+
+        if (\count($args) > 1) {
+            // Not enabled by default.
+            if (\in_array('--sign-with-master', \array_slice($args, 1))) {
+                $this->signWithMasterKeys = true;
+            }
+        }
 
         // Cabins:
         if (\is_readable($path.'/cabin.json')) {
@@ -83,7 +92,19 @@ class Sign extends Base\Command
         }
 
         $supplier = $this->config['suppliers'][$supplier_name];
-        $numKeys = \count($supplier['signing_keys']);
+        $numKeys = 0;
+        if ($this->signWithMasterKeys) {
+            $numKeys = \count($supplier['signing_keys']);
+            $good_keys = $supplier['signing_keys'];
+        } else {
+            $good_keys = [];
+            foreach ($supplier['signing_keys'] as $k) {
+                if ($k['type'] === 'signing') {
+                    $good_keys[] = $k;
+                    ++$numKeys;
+                }
+            }
+        }
         if ($numKeys > 1) {
             echo 'You have more than one signing key available.', "\n";
 
@@ -91,10 +112,18 @@ class Sign extends Base\Command
             $size = (int) \floor(
                 \log($numKeys, 10)
             );
-            $key_associations = $HTAB."ID\t Public Key\n";
+            $key_associations = $HTAB."ID\t Public Key " . \str_repeat(' ', 33) . "\t Type\n";
             foreach ($supplier['signing_keys'] as $sign_key) {
+                if (!$this->signWithMasterKeys && $sign_key['type'] === 'master') {
+                    continue;
+                }
                 $_n = \str_pad($n, $size, ' ', STR_PAD_LEFT);
-                $key_associations .= $HTAB . $_n . $HTAB . $sign_key['public_key'] . "\n";
+
+                // Short format:
+                $pk = Base64UrlSafe::encode(
+                    \Sodium\hex2bin($sign_key['public_key'])
+                );
+                $key_associations .= $HTAB . $_n . $HTAB . $pk . $HTAB . $sign_key['type'] . "\n";
                 ++$n;
             }
             // Let's ascertain the user's key selection
@@ -105,15 +134,27 @@ class Sign extends Base\Command
                     $choice = null;
                 }
             } while (empty($choice));
-            $supplierKey = $supplier['signing_keys'][$choice - 1];
+            $supplierKey = $good_keys[$choice - 1];
+            echo "\n";
         } else {
-            $supplierKey = $supplier['signing_keys'][0];
+            $supplierKey = $good_keys[0];
         }
 
         if (empty($supplierKey['salt'])) {
             echo 'Salt not found for this key.', "\n";
             exit(255);
         }
+
+        // Short format:
+        $pk = Base64UrlSafe::encode(
+            \Sodium\hex2bin($supplierKey['public_key'])
+        );
+        $c = $supplierKey['type'] === 'master'
+            ? $this->c['red']
+            : $this->c['yellow'];
+
+        echo 'Selected ', $supplierKey['type'], ' key: ', $c, $pk, $this->c[''], "\n";
+
         $password = $this->silentPrompt('Enter Password for Signing Key:');
 
         // Derive and split the SignatureKeyPair from your password and salt
@@ -121,12 +162,15 @@ class Sign extends Base\Command
         switch ($supplierKey['type']) {
             case 'signing':
                 $type = KeyFactory::MODERATE;
+                echo 'Verifying (this may take a second or two)...';
                 break;
             case 'master':
                 $type = KeyFactory::SENSITIVE;
+                echo 'Verifying (this may take a few seconds)...';
                 break;
             default:
                 $type = KeyFactory::INTERACTIVE;
+                echo 'Verifying...';
         }
         $keyPair = KeyFactory::deriveSignatureKeyPair(
             $password,
@@ -136,7 +180,9 @@ class Sign extends Base\Command
         );
             $sign_secret = $keyPair->getSecretKey();
             $sign_public = $keyPair->getPublicKey();
+        echo ' Done.', "\n";
 
+        // We don't need this anymore.
         \Sodium\memzero($password);
 
         // Check that the public key we derived from the password matches the one on file

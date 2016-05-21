@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Airship\Barge\Commands;
 
 use \Airship\Barge as Base;
+use ParagonIE\ConstantTime\Base64UrlSafe;
 use \ZxcvbnPhp\Zxcvbn;
 use \ParagonIE\Halite\KeyFactory;
 use \ParagonIE\Halite\Asymmetric\Crypto as Asymmetric;
@@ -114,8 +115,14 @@ class Keygen extends Base\Command
         
         do {
             // Next, let's get a password.
-            echo 'Please enter a strong password to use for your signing key.', "\n";
-            $password = $this->silentPrompt("Password:");
+            echo 'Please enter a strong passphrase to use for your signing key.', "\n";
+            $password = $this->silentPrompt("Passphrase:");
+            $password2 = $this->silentPrompt("Confirm passphrase:");
+            if (!\hash_equals($password, $password2)) {
+                unset($password);
+                echo $this->c['red'], 'Passwords did not match!', $this->c[''], "\n";
+                continue;
+            }
             
             // Use zxcvbn to assess password strength
             $strength = $zxcvbn->passwordStrength($password, $userInput);
@@ -189,17 +196,21 @@ class Keygen extends Base\Command
         $this->config['suppliers'][$supplier]['signing_keys'][] = $new_key;
         
         // Send the public kay (and, maybe, the salt) to the Skyport.
-        $this->sendToSkyport($supplier, $new_key, $message, $masterSig, $masterPubKey);
-        /*
-        // DEBUG CODE; DO THIS INSTEAD:
         $response = $this->sendToSkyport($supplier, $new_key, $message, $masterSig, $masterPubKey);
         if (!empty($response['status'])) {
             if ($response['status'] === 'ERROR') {
                 echo "Error message returned!\n";
-                var_dump($response);
+                throw new \Error($response['message']);
+            }
+            $pk = Base64UrlSafe::encode(
+                \Sodium\hex2bin($new_key['public_key'])
+            );
+            if ($new_key['type'] === 'master') {
+                echo 'New master key: ', $this->c['red'], $pk, $this->c[''], "\n";
+            } else {
+                echo 'New signing key: ', $this->c['yellow'], $pk, $this->c[''], "\n";
             }
         }
-        */
     }
 
     /**
@@ -233,7 +244,10 @@ class Keygen extends Base\Command
             echo 'Select which master key to use:';
             do {
                 foreach ($master_keys as $index => $key) {
-                    echo ($index + 1), "\t", $key['public_key'], "\n";
+                    $pk = Base64UrlSafe::encode(
+                        \Sodium\hex2bin($key['public_key'])
+                    );
+                    echo ($index + 1), "\t", $pk, "\n";
                 }
                 $keyIndex = $this->prompt('Enter a number: ');
                 if (empty($keyIndex)) {
@@ -276,6 +290,8 @@ class Keygen extends Base\Command
                     $messageToSign,
                     $masterSecretKey
                 );
+            } else {
+                echo 'Incorrect master key passphrase!', "\n";
             }
         } while (!$signature);
 
