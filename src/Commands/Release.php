@@ -111,12 +111,12 @@ class Release extends Base\Command
                 'phar' => new \CURLFile(
                     $path.'/dist/'.$pharName,
                     'application/octet-stream',
-                    'phar'
+                    $pharName
                 ),
                 'signature' => new \CURLFile(
                     $path.'/dist/'.$signature,
                     'application/octet-stream',
-                    'signature'
+                    $signature
                 )
             ]
         );
@@ -159,12 +159,12 @@ class Release extends Base\Command
                 'phar' => new \CURLFile(
                     $path.'/dist/'.$pharName,
                     'application/octet-stream',
-                    'phar'
+                    $pharName
                 ),
                 'signature' => new \CURLFile(
                     $path.'/dist/'.$signature,
                     'application/octet-stream',
-                    'signature'
+                    $signature
                 )
             ]
         );
@@ -208,12 +208,12 @@ class Release extends Base\Command
                 'zip' => new \CURLFile(
                     $path.'/dist/'.$zipName,
                     'application/octet-stream',
-                    'zip'
+                    $zipName
                 ),
                 'signature' => new \CURLFile(
                     $path.'/dist/'.$signature,
                     'application/octet-stream',
-                    'signature'
+                    $signature
                 )
             ]
         );
@@ -252,7 +252,7 @@ class Release extends Base\Command
                 echo 'The current version you are trying to push, ', 
                     $this->c['yellow'], $manifest['version'], $this->c[''], ",\n";
                 echo 'is already in the system. (The latest version pushed is ',
-                    $this->c['yellow'], $result['version'], $this->c[''], ".\n\n";
+                    $this->c['yellow'], $result['latest'], $this->c[''], ".\n\n";
                 
                 // Get and process the user's response
                 $choice = $this->prompt('Push a new release anyway? (y/N)');

@@ -23,6 +23,7 @@ abstract class HTTP
     const ENCODED_SIGNATURE_LENGTH = 88;
 
     public static $last_ch; // Store the last curl handle here
+    public static $debug = false;
     
     /**
      * Do a simple GET request
@@ -129,6 +130,9 @@ abstract class HTTP
         $body = self::post($url, $args, $options);
         if (empty($body)) {
             throw new \Exception('Empty response from ' . $url);
+        }
+        if (self::$debug) {
+            \var_dump($body);
         }
         $firstNewLine = \strpos($body, "\n");
         // There should be a newline immediately after the base64urlsafe-encoded signature
