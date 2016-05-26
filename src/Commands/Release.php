@@ -204,7 +204,7 @@ class Release extends Base\Command
                 'version' => isset($manifest['version'])
                     ? $manifest['version']
                     : '',
-                'type' => 'gadget',
+                'type' => 'motif',
                 'zip' => new \CURLFile(
                     $path.'/dist/'.$zipName,
                     'application/octet-stream',
