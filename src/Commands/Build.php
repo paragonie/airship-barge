@@ -79,6 +79,7 @@ class Build extends Base\Command
         // Step One -- Let's build our .phar file
         $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         try {
+            \copy($path.'/cabin.json', $path.'/src/manifest.json');
             if (\file_exists($path.'/dist/'.$pharName)) {
                 \unlink($path.'/dist/'.$pharName);
             }

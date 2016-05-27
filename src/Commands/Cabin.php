@@ -86,7 +86,13 @@ class Cabin extends Proto\Init
             )
         );
 
-        $ns = $this->upperFirst($supplier) . '\\' . $this->upperFirst($project_name);
+        // For lazy autoloading...
+        $ns = \implode('\\', [
+            'Airship',
+            'Cabin',
+            $this->upperFirst($supplier),
+            $this->upperFirst($project_name)
+        ]);
 
         // Some example scripts
         \file_put_contents(
