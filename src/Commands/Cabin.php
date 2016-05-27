@@ -90,8 +90,7 @@ class Cabin extends Proto\Init
         $ns = \implode('\\', [
             'Airship',
             'Cabin',
-            // $this->upperFirst($supplier),
-            $this->upperFirst($project_name)
+            $this->upperFirst($supplier) . '_' .$this->upperFirst($project_name)
         ]);
 
         // Some example scripts
@@ -159,5 +158,25 @@ class Cabin extends Proto\Init
     protected function getExtraData(): array
     {
         return [];
+    }
+
+    /**
+     * Domain-specific variant of PHP's native ucfirst()
+     *
+     * @param string $string
+     * @return string
+     */
+    protected function upperFirst(string $string = '')
+    {
+        $string[0] = \strtoupper($string[0]);
+        for ($i = 0; $i < \strlen($string); ++$i) {
+            if ($string[$i] === '-' || $string[$i] === '_') {
+                $string = \substr($string, 0, $i) . \substr($string, $i + 1);
+                if (\preg_match('#[a-z]#', $string[$i])) {
+                    $string[$i] = \strtoupper($string[$i]);
+                }
+            }
+        }
+        return $string;
     }
 }
