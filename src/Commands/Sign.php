@@ -56,9 +56,9 @@ class Sign extends Base\Command
         }
 
         // Motifs:
-        if (\is_readable($path.'/motif.json')) {
+        if (\is_readable($path.'/src/motif.json')) {
             $manifest = \json_decode(
-                \file_get_contents($path.'/motif.json'),
+                \file_get_contents($path.'/src/motif.json'),
                 true
             );
             return $this->signMotif($manifest, $path);

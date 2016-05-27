@@ -173,9 +173,16 @@ class Build extends Base\Command
         $zipOpts = [
             'remove_all_path' => true
         ];
-        $zip->addGlob($path . '/src/*', 0, $zipOpts);
+        $currentDir = \getcwd();
+        \chdir($path . '/src/');
+        $zip->addGlob('*.json', 0, $zipOpts);
+        $zip->addGlob('*/*', 0, $zipOpts);
+        \chdir($currentDir);
         $zip->setArchiveComment(\json_encode($manifest));
-        $zip->close();
+        if (!$zip->close()) {
+            echo 'Zip archive unsuccessful', "\n";
+            exit(255);
+        }
         echo 'Motif built.', "\n",
             $path.'/dist/'.$zipName, "\n",
         'Don\'t forget to sign it!', "\n";

@@ -20,6 +20,7 @@
     "require": {
         "php": "^7",
         "ext-libsodium": "^1.0.6",
+        "ext-zip": "*",
         "bjeavons/zxcvbn-php": "*",
         "paragonie/constant_time_encoding": "^2.0",
         "paragonie/halite": "^2.1"
