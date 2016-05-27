@@ -90,7 +90,7 @@ class Cabin extends Proto\Init
         $ns = \implode('\\', [
             'Airship',
             'Cabin',
-            $this->upperFirst($supplier),
+            // $this->upperFirst($supplier),
             $this->upperFirst($project_name)
         ]);
 
