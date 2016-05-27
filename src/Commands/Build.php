@@ -4,6 +4,13 @@ namespace Airship\Barge\Commands;
 
 use \Airship\Barge as Base;
 
+/**
+ * Class Build
+ *
+ * This assembles a project directory into a deliverable (Phar or Zip)
+ *
+ * @package Airship\Barge\Commands
+ */
 class Build extends Base\Command
 {
     public $essential = true;
@@ -62,6 +69,8 @@ class Build extends Base\Command
                 : null;
             return $this->buildMotif($path, $manifest);
         }
+
+        // Not found? Error out:
         echo 'Unknown project type!', "\n";
         exit(255);
     }
@@ -79,12 +88,20 @@ class Build extends Base\Command
         // Step One -- Let's build our .phar file
         $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
         try {
+            // Remove old src/manifest.json
+            if (\file_exists($path.'/src/manifest.json')) {
+                \unlink($path.'/src/manifest.json');
+                \clearstatcache();
+            }
+            // Copy as manifest.json in the source directory
             \copy($path.'/cabin.json', $path.'/src/manifest.json');
             if (\file_exists($path.'/dist/'.$pharName)) {
                 \unlink($path.'/dist/'.$pharName);
+                \clearstatcache();
             }
             if (\file_exists($path.'/dist/'.$pharName.'.ed25519.sig')) {
                 \unlink($path.'/dist/'.$pharName.'.ed25519.sig');
+                \clearstatcache();
             }
             $phar = new \Phar(
                 $path.'/dist/'.$pharName,
@@ -92,6 +109,10 @@ class Build extends Base\Command
                 $pharName
             );
         } catch (\UnexpectedValueException $e) {
+            if (\file_exists($path.'/src/manifest.json')) {
+                \unlink($path . '/src/manifest.json');
+                \clearstatcache();
+            }
             echo 'Could not open .phar', "\n";
             exit(255); // Return an error flag
         }
@@ -103,6 +124,11 @@ class Build extends Base\Command
         echo 'Cabin built.', "\n",
             $path.'/dist/'.$pharName, "\n",
         'Don\'t forget to sign it!', "\n";
+        if (\file_exists($path.'/src/manifest.json')) {
+            // Cleanup
+            \unlink($path . '/src/manifest.json');
+            \clearstatcache();
+        }
         exit(0); // Return a success flag
     }
 
@@ -121,9 +147,11 @@ class Build extends Base\Command
         try {
             if (\file_exists($path.'/dist/'.$pharName)) {
                 \unlink($path.'/dist/'.$pharName);
+                \clearstatcache();
             }
             if (\file_exists($path.'/dist/'.$pharName.'.ed25519.sig')) {
                 \unlink($path.'/dist/'.$pharName.'.ed25519.sig');
+                \clearstatcache();
             }
             $phar = new \Phar(
                 $path.'/dist/'.$pharName,
@@ -159,9 +187,11 @@ class Build extends Base\Command
         $zipName = $manifest['supplier'].'.'.$manifest['name'].'.zip';
         if (\file_exists($path.'/dist/'.$zipName)) {
             \unlink($path.'/dist/'.$zipName);
+            \clearstatcache();
         }
         if (\file_exists($path.'/dist/'.$zipName.'.ed25519.sig')) {
             \unlink($path.'/dist/'.$zipName.'.ed25519.sig');
+            \clearstatcache();
         }
         $zip = new \ZipArchive();
         $flags = \ZipArchive::CREATE | \ZipArchive::OVERWRITE;

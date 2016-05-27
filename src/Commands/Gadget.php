@@ -17,6 +17,8 @@ class Gadget extends Proto\Init
     public $display = 2;
 
     /**
+     * Create a skeleton for a new Airship gadget.
+     *
      * @param string $supplier
      * @param string $project_name
      * @param string $basePath
@@ -102,15 +104,22 @@ class Gadget extends Proto\Init
         );
         $ns = $this->upperFirst($supplier) . '\\' . $this->upperFirst($project_name);
 
+
         // Some example scripts
+        \file_put_contents(
+            $basePath.'/'.$project_name.'/src/Blueprint/init_gear.php',
+            '<?php'."\n".
+            'use \\Airship\\Engine\\Gears;'."\n".
+            'namespace '.$ns.'\\Blueprint;'."\n\n".
+            'if (!\\class_exists(\'BlueprintGear\')) {'."\n".
+            '    Gears::extract(\'Blueprint\', \'BlueprintGear\', __NAMESPACE__);'."\n".
+            '}'."\n\n"
+        );
         \file_put_contents(
             $basePath.'/'.$project_name.'/src/Blueprint/Example.php',
             '<?php'."\n".
-            'use \\Airship\\Engine\\Gears;'."\n".
-            'namespace '.$ns.';'."\n\n".
-            'if (!\\class_exists(\'BlueprintGear\')) {'."\n".
-            '    Gears::extract(\'Blueprint\', \'BlueprintGear\', __NAMESPACE__);'."\n".
-            '}'."\n\n".
+            'namespace '.$ns.'\\Blueprint;'."\n\n".
+            'require_once __DIR__."/init_gear.php";'."\n\n".
             'class Example extends BlueprintGear'."\n".
             '{'."\n".
             '    public function getData()'."\n".
@@ -119,13 +128,21 @@ class Gadget extends Proto\Init
             '    }'."\n".
             '}'."\n\n"
         );
+        // Some example scripts
+        \file_put_contents(
+            $basePath.'/'.$project_name.'/src/Landing/init_gear.php',
+            '<?php'."\n".
+            'use \\Airship\\Engine\\Gears;'."\n".
+            'namespace '.$ns.'\\Landing;'."\n\n".
+            'if (!\\class_exists(\'LandingGear\')) {'."\n".
+            '    Gears::extract(\'Landing\', \'LandingGear\', __NAMESPACE__);'."\n".
+            '}'."\n\n"
+        );
         \file_put_contents(
             $basePath.'/'.$project_name.'/src/Landing/Example.php',
             '<?php'."\n".
-            'namespace '.$ns.';'."\n\n".
-            'if (!\\class_exists(\'LandingGear\')) {'."\n".
-            '    \\Airship\\Engine\\Gears::extract(\'Landing\', \'LandingGear\', __NAMESPACE__);'."\n".
-            '}'."\n\n".
+            'namespace '.$ns.'\\Landing;'."\n\n".
+            'require_once __DIR__."/init_gear.php";'."\n\n".
             'class Example extends LandingGear'."\n".
             '{'."\n".
             '    public function index()'."\n".
@@ -170,7 +187,9 @@ class Gadget extends Proto\Init
     {
         echo 'Is this for a specific cabin?', "\n";
         echo 'If yes, enter a fully qualified cabin name below. (Leave blank for a universal gadget.)', "\n";
-        echo 'For example: ', $this->c['yellow'], 'paragonie/bridge', $this->c[''], "\n";
+        echo 'For example: ',
+                $this->c['yellow'], 'paragonie/Bridge', $this->c[''], ' or ',
+                $this->c['yellow'], 'username/example-cabin', $this->c[''], "\n";
 
         $cabin_split = [];
         do {

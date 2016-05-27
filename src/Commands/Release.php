@@ -8,11 +8,19 @@ use \ParagonIE\Halite\{
     File
 };
 
+/**
+ * Class Release
+ *
+ * Given a built and signed package, send it to the server so
+ * it may be distributed to the Airships that use it.
+ *
+ * @package Airship\Barge\Commands
+ */
 class Release extends Base\Command
 {
     public $essential = true;
     public $name = 'Release';
-    public $description = 'Release an update to your Gadget.';
+    public $description = 'Release your project for availability in Airship projects.';
     public $display = 3;
     
     /**
@@ -35,14 +43,15 @@ class Release extends Base\Command
                 true
             );
             if ($this->pharSignatureCheck($path, $manifest)) {
-                if ($this->versionCheck($manifest)) {
-                    $this->pushCabin(
-                        $path,
-                        $manifest
-                    );
+                if ($this->versionCheck($manifest, 'cabin')) {
+                    $this->pushCabin($path, $manifest);
+                } else {
+                    echo 'Aborted.', "\n";
+                    exit(0);
                 }
             } else {
                 echo 'Invalid signature. Did you forget to sign it?', "\n";
+                exit(255);
             }
         }
 
@@ -53,14 +62,15 @@ class Release extends Base\Command
                 true
             );
             if ($this->pharSignatureCheck($path, $manifest)) {
-                if ($this->versionCheck($manifest)) {
-                    $this->pushGadget(
-                        $path,
-                        $manifest
-                    );
+                if ($this->versionCheck($manifest, 'gadget')) {
+                    $this->pushGadget($path, $manifest);
+                } else {
+                    echo 'Aborted.', "\n";
+                    exit(0);
                 }
             } else {
                 echo 'Invalid signature. Did you forget to sign it?', "\n";
+                exit(255);
             }
         }
 
@@ -71,16 +81,20 @@ class Release extends Base\Command
                 true
             );
             if ($this->zipSignatureCheck($path, $manifest)) {
-                if ($this->versionCheck($manifest)) {
-                    $this->pushMotif(
-                        $path,
-                        $manifest
-                    );
+                if ($this->versionCheck($manifest, 'motif')) {
+                    $this->pushMotif($path, $manifest);
+                } else {
+                    echo 'Aborted.', "\n";
+                    exit(0);
                 }
             } else {
                 echo 'Invalid signature. Did you forget to sign it?', "\n";
+                exit(255);
             }
         }
+
+        echo 'Could not find manifest file.', "\n";
+        exit(255);
     }
     /**
      * Push the gadget to the skyport
@@ -233,7 +247,7 @@ class Release extends Base\Command
      * @param array $manifest
      * @return boolean
      */
-    protected function versionCheck(array $manifest = [])
+    protected function versionCheck(array $manifest = [], string $type = '')
     {
         list ($skyport, $publicKey) = $this->getSkyport();
         
@@ -241,6 +255,7 @@ class Release extends Base\Command
             $skyport.'package/'.$manifest['supplier'].'/'.$manifest['name'].'/version',
             $publicKey,
             [
+                'type' => $type,
                 'token' => $this->getToken($manifest['supplier'])
             ]
         );
@@ -253,6 +268,8 @@ class Release extends Base\Command
                     $this->c['yellow'], $manifest['version'], $this->c[''], ",\n";
                 echo 'is already in the system. (The latest version pushed is ',
                     $this->c['yellow'], $result['latest'], $this->c[''], ".\n\n";
+
+                echo 'A forced push is not likely to succeed.', "\n";
                 
                 // Get and process the user's response
                 $choice = $this->prompt('Push a new release anyway? (y/N)');

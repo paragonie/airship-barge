@@ -50,14 +50,24 @@ class Cabin extends Proto\Init
         \mkdir($basePath.'/'.$project_name.'/src/public', 0755);
         \mkdir($basePath.'/'.$project_name.'/src/Updates', 0755);
 
-        // Basic gadget.json
+        // For lazy autoloading...
+        $ns = \implode('\\', [
+            'Airship',
+            'Cabin',
+            $this->upperFirst($supplier) . '__' .$this->upperFirst($project_name)
+        ]);
+
+        // Basic cabin.json
         \file_put_contents(
             $basePath.'/'.$project_name.'/cabin.json',
             \json_encode(
                 [
                     'name' =>
                         $project_name,
-                    'route_fallback' => null,
+                    'namespace' =>
+                        $ns,
+                    'route_fallback' =>
+                        null,
                     'description' =>
                         $description,
                     'routes' =>
@@ -86,22 +96,21 @@ class Cabin extends Proto\Init
             )
         );
 
-        // For lazy autoloading...
-        $ns = \implode('\\', [
-            'Airship',
-            'Cabin',
-            $this->upperFirst($supplier) . '_' .$this->upperFirst($project_name)
-        ]);
-
         // Some example scripts
+        \file_put_contents(
+            $basePath.'/'.$project_name.'/src/Blueprint/init_gear.php',
+            '<?php'."\n".
+            'use \\Airship\\Engine\\Gears;'."\n".
+            'namespace '.$ns.'\\Blueprint;'."\n\n".
+            'if (!\\class_exists(\'BlueprintGear\')) {'."\n".
+            '    Gears::extract(\'Blueprint\', \'BlueprintGear\', __NAMESPACE__);'."\n".
+            '}'."\n\n"
+        );
         \file_put_contents(
             $basePath.'/'.$project_name.'/src/Blueprint/Example.php',
             '<?php'."\n".
-            'use \\Airship\\Engine\\Gears;'."\n".
-            'namespace '.$ns.';'."\n\n".
-            'if (!\\class_exists(\'BlueprintGear\')) {'."\n".
-            '    Gears::extract(\'Blueprint\', \'BlueprintGear\', __NAMESPACE__);'."\n".
-            '}'."\n\n".
+            'namespace '.$ns.'\\Blueprint;'."\n\n".
+            'require_once __DIR__."/init_gear.php";'."\n\n".
             'class Example extends BlueprintGear'."\n".
             '{'."\n".
             '    public function getData()'."\n".
@@ -110,13 +119,21 @@ class Cabin extends Proto\Init
             '    }'."\n".
             '}'."\n\n"
         );
+        // Some example scripts
+        \file_put_contents(
+            $basePath.'/'.$project_name.'/src/Landing/init_gear.php',
+            '<?php'."\n".
+            'use \\Airship\\Engine\\Gears;'."\n".
+            'namespace '.$ns.'\\Landing;'."\n\n".
+            'if (!\\class_exists(\'LandingGear\')) {'."\n".
+            '    Gears::extract(\'Landing\', \'LandingGear\', __NAMESPACE__);'."\n".
+            '}'."\n\n"
+        );
         \file_put_contents(
             $basePath.'/'.$project_name.'/src/Landing/Example.php',
             '<?php'."\n".
-            'namespace '.$ns.';'."\n\n".
-            'if (!\\class_exists(\'LandingGear\')) {'."\n".
-            '    \\Airship\\Engine\\Gears::extract(\'Landing\', \'LandingGear\', __NAMESPACE__);'."\n".
-            '}'."\n\n".
+            'namespace '.$ns.'\\Landing;'."\n\n".
+            'require_once __DIR__."/init_gear.php";'."\n\n".
             'class Example extends LandingGear'."\n".
             '{'."\n".
             '    public function index()'."\n".
@@ -168,15 +185,6 @@ class Cabin extends Proto\Init
      */
     protected function upperFirst(string $string = '')
     {
-        $string[0] = \strtoupper($string[0]);
-        for ($i = 0; $i < \strlen($string); ++$i) {
-            if ($string[$i] === '-' || $string[$i] === '_') {
-                $string = \substr($string, 0, $i) . \substr($string, $i + 1);
-                if (\preg_match('#[a-z]#', $string[$i])) {
-                    $string[$i] = \strtoupper($string[$i]);
-                }
-            }
-        }
-        return $string;
+        return \trim(parent::upperFirst($string), '_');
     }
 }

@@ -4,6 +4,13 @@ namespace Airship\Barge\Commands\Proto;
 
 use \Airship\Barge as Base;
 
+/**
+ * Class Init
+ *
+ * Base class for initializing a new project.
+ *
+ * @package Airship\Barge\Commands\Proto
+ */
 abstract class Init extends Base\Command
 {
     public $descriptionPrompt = 'Project description: ';
@@ -40,11 +47,11 @@ abstract class Init extends Base\Command
         do {
             $project_name = $this->prompt('Enter a project name: ');
             if (\preg_match(
-                '#^[\x00-\x20\*\."/\\\\\[\]:;\|=\.<>\$\x7f]+$#',
+                '#^[\x00-\x20\*\."/\\\\\[\]\{\}:;\|=\.<>\$\x7f]+$#',
                 $project_name
             )) {
                 echo 'Project names cannot contain any of the following characters:', "\n\t",
-                    '^ * " / \\ [ ] : ; | . < > $', "\n\n";
+                    '^ * " / \\ [ ] { } : ; | . < > $', "\n\n";
                 $project_name = null;
             }
         } while (empty($project_name));
@@ -54,8 +61,10 @@ abstract class Init extends Base\Command
             $description = 'Not provided';
         }
 
+        // Each project type has its own implementation:
         $extra = $this->getExtraData();
 
+        // We finish by creating a skeleton:
         return $this->createSkeleton(
             $supplier,
             $project_name,

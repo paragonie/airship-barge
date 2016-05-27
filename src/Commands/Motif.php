@@ -17,6 +17,8 @@ class Motif extends Proto\Init
     public $descriptionPrompt = 'Display name: ';
     public $display = 4;
     /**
+     * Create a skeleton for a new Airship motif.
+     *
      * @param string $supplier
      * @param string $project_name
      * @param string $basePath
@@ -92,7 +94,9 @@ class Motif extends Proto\Init
     {
         echo 'Is this for a specific cabin?', "\n";
         echo 'If yes, enter a fully qualified cabin name below. (Leave blank for a universal motif.)', "\n";
-        echo 'For example: ', $this->c['yellow'], 'paragonie/bridge', $this->c[''], "\n";
+        echo 'For example: ',
+        $this->c['yellow'], 'paragonie/Bridge', $this->c[''], ' or ',
+        $this->c['yellow'], 'username/example-cabin', $this->c[''], "\n";
 
         $cabin_split = [];
         do {

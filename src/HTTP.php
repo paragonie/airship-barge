@@ -71,9 +71,9 @@ abstract class HTTP
             throw new \Exception('Invalid Signature');
         }
         $sig = Base64UrlSafe::decode(
-            Binary::safeSubstr($body, 0, 88)
+            Binary::safeSubstr($body, 0, self::ENCODED_SIGNATURE_LENGTH)
         );
-        $msg = Binary::safeSubstr($body, 89);
+        $msg = Binary::safeSubstr($body, self::ENCODED_SIGNATURE_LENGTH + 1);
         if (!Asymmetric::verify($msg, $publicKey, $sig, true)) {
             throw new \Exception('Invalid Signature');
         }
@@ -114,6 +114,9 @@ abstract class HTTP
     /**
      * Get/verify/parse a JSON response
      *
+     * The _server_ is the one that signs the message.
+     * We're just verifying the Ed25519 signature.
+     *
      * @param string $url
      * @param SignaturePublicKey $publicKey
      * @param array $args
@@ -140,9 +143,9 @@ abstract class HTTP
             throw new \Exception('Invalid Signature');
         }
         $sig = Base64UrlSafe::decode(
-            Binary::safeSubstr($body, 0, 88)
+            Binary::safeSubstr($body, 0, self::ENCODED_SIGNATURE_LENGTH)
         );
-        $msg = Binary::safeSubstr($body, 89);
+        $msg = Binary::safeSubstr($body, self::ENCODED_SIGNATURE_LENGTH + 1);
         if (!Asymmetric::verify($msg, $publicKey, $sig, true)) {
             throw new \Exception('Invalid Signature');
         }

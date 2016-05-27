@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Airship\Barge\Commands;
 
 use \Airship\Barge as Base;
-use ParagonIE\ConstantTime\Base64UrlSafe;
+use \ParagonIE\ConstantTime\Base64UrlSafe;
 use \ZxcvbnPhp\Zxcvbn;
 use \ParagonIE\Halite\KeyFactory;
 use \ParagonIE\Halite\Asymmetric\Crypto as Asymmetric;
@@ -21,6 +21,7 @@ class Keygen extends Base\Command
      * @param array $args - CLI arguments
      * @echo
      * @return null
+     * @throws \Error
      */
     public function fire(array $args = [])
     {
@@ -41,6 +42,7 @@ class Keygen extends Base\Command
         }
         
         if (\count($this->config['suppliers'][$supplier]['signing_keys']) === 0) {
+            // Your first key is a master key; always.
             $has_master = false;
             $key_type = 'master';
         } else {
@@ -68,12 +70,16 @@ class Keygen extends Base\Command
                 }
             } while (empty($key_type));
         }
-        
+
+        // Each key gets its own unique Argon2 salt
         echo 'Generating a unique salt...', "\n";
         $salt = \random_bytes(\Sodium\CRYPTO_PWHASH_SALTBYTES);
-        
+
         $store_in_cloud = null;
-        
+
+        // This is optional and not recommended, but some people prefer convenience.
+        // We really hope this is adequate information to make an informed choice
+        // based on personal risk tolerance:
         echo 'Do you wish to store the salt for generating your signing key in the Skyport?', "\n";
         echo 'This is a security-convenience trade-off. The default is NO.', "\n\n";
         echo $this->c['green'], 'Pro:', $this->c[''],
@@ -139,8 +145,12 @@ class Keygen extends Base\Command
         echo 'Generating signing key...';
 
         if ($key_type === 'master') {
+            // Master keys are treated as sensitive.
             $sign_level = KeyFactory::SENSITIVE;
         } else {
+            // Signing keys (day-to-day) are still moderately sensitive.
+            // We're using a KDF locally so we don't have DDoS concerns
+            // (which usually calls for INTERACTIVE).
             $sign_level = KeyFactory::MODERATE;
         }
         $keyPair = KeyFactory::deriveSignatureKeyPair(

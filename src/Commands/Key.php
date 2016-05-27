@@ -63,15 +63,6 @@ class Key extends Keygen
             exit(255);
         }
 
-        /*
-        $new_key = [
-            'date_generated' => \date('Y-m-d\TH:i:s'),
-            'store_in_cloud' => $store_in_cloud,
-            'salt' => \Sodium\bin2hex($salt),
-            'public_key' => \Sodium\bin2hex($sign_public->getRawKeyMaterial()),
-            'type' => $key_type
-        ];
-        */
         $masterKeys = [];
         $keyList = [];
         foreach ($this->config['suppliers'][$supplier]['signing_keys'] as $key) {
@@ -134,6 +125,7 @@ class Key extends Keygen
             }
         }
 
+        // This is what get signed by our master key:
         $message = [
             'action' =>
                 'REVOKE',
@@ -144,7 +136,6 @@ class Key extends Keygen
             'supplier' =>
                 $supplier
         ];
-
         $messageToSign = \json_encode($message);
 
         $iter = false;
@@ -202,7 +193,7 @@ class Key extends Keygen
      * @param array $data
      * @param string $masterSignature
      * @param string $masterPublicKey
-     * @return mixed (array if successful)
+     * @return array
      * @throws \Exception
      */
     protected function sendRevocation(
@@ -210,7 +201,7 @@ class Key extends Keygen
         array $data = [],
         string $masterSignature,
         string $masterPublicKey
-    ) {
+    ): array {
         list ($skyport, $publicKey) = $this->getSkyport();
 
         $postData = [
@@ -243,8 +234,10 @@ class Key extends Keygen
      * @return array
      * @throws \Exception
      */
-    protected function selectKeyFromList(string $prompt = 'Select one: ', array $keys = []): array
-    {
+    protected function selectKeyFromList(
+        string $prompt = 'Select one: ',
+        array $keys = []
+    ): array {
         $countKeys = \count($keys);
         while (true) {
             for ($i = 1; $i <= $countKeys; ++$i) {

@@ -4,6 +4,13 @@ namespace Airship\Barge;
 
 use ParagonIE\Halite\Asymmetric\SignaturePublicKey;
 
+/**
+ * Class Command
+ *
+ * This is the base class for all barge commands.
+ *
+ * @package Airship\Barge
+ */
 abstract class Command
 {
     const TAB_SIZE = 8;

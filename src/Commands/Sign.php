@@ -9,16 +9,24 @@ use \ParagonIE\Halite\{
     Asymmetric\SignatureSecretKey
 };
 
+/**
+ * Class Sign
+ *
+ * This command allows you to sign a cabin, gadget, or motif
+ * with one of your signing keys.
+ *
+ * @package Airship\Barge\Commands
+ */
 class Sign extends Base\Command
 {
     protected $signWithMasterKeys = false;
     public $essential = true;
     public $name = 'Sign';
-    public $description = 'Digitally sign the current Gadget.';
+    public $description = 'Digitally sign the current Cabin/Gadget/Motif.';
     public $display = 3;
     
     /**
-     * Execute the build command
+     * Execute the sign command
      *
      * @param array $args - CLI arguments
      * @echo
@@ -81,25 +89,35 @@ class Sign extends Base\Command
 
         $supplier_name = $manifest['supplier'];
 
+        // Sanity checks:
         if (!\array_key_exists('suppliers', $this->config)) {
             echo 'You are not authenticated for any suppliers.', "\n";
             exit(255);
         }
         if (!\array_key_exists($supplier_name, $this->config['suppliers'])) {
-            echo 'Check the supplier in gadget.json (', $supplier_name,
-            '). Otherwise, you might need to log in.', "\n";
+            echo 'Check the supplier in the JSON file (', $supplier_name, ') for correctness.',
+                'Otherwise, you might need to log in.', "\n";
             exit(255);
         }
 
         $supplier = $this->config['suppliers'][$supplier_name];
         $numKeys = 0;
+
         if ($this->signWithMasterKeys) {
+            $good_keys = [];
+            // This should really not be used:
             $numKeys = \count($supplier['signing_keys']);
-            $good_keys = $supplier['signing_keys'];
+            foreach ($supplier['signing_keys'] as $k) {
+                if (!empty($k['salt'])) {
+                    $good_keys[] = $k;
+                    ++$numKeys;
+                }
+            }
         } else {
+            // This should be used instead:
             $good_keys = [];
             foreach ($supplier['signing_keys'] as $k) {
-                if ($k['type'] === 'signing') {
+                if ($k['type'] === 'signing' && !empty($k['salt'])) {
                     $good_keys[] = $k;
                     ++$numKeys;
                 }
@@ -140,8 +158,9 @@ class Sign extends Base\Command
             $supplierKey = $good_keys[0];
         }
 
+        // The above !empty($k['salt']) check should have rendered this check redundant:
         if (empty($supplierKey['salt'])) {
-            echo 'Salt not found for this key.', "\n";
+            echo 'Salt not found for this key. It is not possible to reproduce it.', "\n";
             exit(255);
         }
 
@@ -149,6 +168,10 @@ class Sign extends Base\Command
         $pk = Base64UrlSafe::encode(
             \Sodium\hex2bin($supplierKey['public_key'])
         );
+
+        // Color coded: Master keys are red, since they take longer.
+        // We don't support signing packages with a master key, but
+        // this decision could be undone in the future.
         $c = $supplierKey['type'] === 'master'
             ? $this->c['red']
             : $this->c['yellow'];
@@ -178,8 +201,8 @@ class Sign extends Base\Command
             false,
             $type
         );
-            $sign_secret = $keyPair->getSecretKey();
-            $sign_public = $keyPair->getPublicKey();
+        $sign_secret = $keyPair->getSecretKey();
+        $sign_public = $keyPair->getPublicKey();
         echo ' Done.', "\n";
 
         // We don't need this anymore.
@@ -189,6 +212,7 @@ class Sign extends Base\Command
         $pubKey = \Sodium\bin2hex($sign_public->getRawKeyMaterial());
         if (!\hash_equals($supplierKey['public_key'], $pubKey)) {
             // Zero the memory ASAP
+            unset($sign_secret);
             unset($sign_public);
             echo 'Invalid password for selected key', "\n";
             exit(255);

@@ -4,11 +4,18 @@ namespace Airship\Barge\Commands;
 
 use Airship\Barge as Base;
 
+/**
+ * Class Login
+ *
+ * Log in, get stored public keys and salts.
+ *
+ * @package Airship\Barge\Commands
+ */
 class Login extends Base\Command
 {
     public $essential = false;
     public $name = 'Login';
-    public $description = 'Authenticate to the Airship ATC service.';
+    public $description = 'Authenticate to the Skyport.';
     public $display = 2;
     
     /**
@@ -27,7 +34,8 @@ class Login extends Base\Command
         $password = $this->silentPrompt("Password:");
         
         list ($skyport, $publicKey) = $this->getSkyport();
-        
+
+        // This should be sent over HTTPS only.
         $result = Base\HTTP::postSignedJSON(
             $skyport.'login',
             $publicKey,
@@ -65,7 +73,6 @@ class Login extends Base\Command
                 }
             }
             echo 'Authentication successful', "\n";
-            exit(0);
         } else {
             $this->config['suppliers'][$username] = $result;
         }

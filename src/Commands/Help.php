@@ -83,7 +83,8 @@ EOBANNER;
             }
 
             $com = $this->getCommandObject($this->commands[$command]);
-            return $com->usageInfo($args);
+            $com->usageInfo($args);
+            return null;
         }
         $this->bargeHeader();
         $this->usageInfo($args);

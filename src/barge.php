@@ -22,6 +22,7 @@ if (!\is_dir(AIRSHIP_LOCAL_CONFIG)) {
  * 1. Register an autoloader for all the classes we use
  */
 require __DIR__."/autoload.php";
+// Also, use the Composer autoloader:
 require \dirname(__DIR__)."/vendor/autoload.php";
 
 /**
@@ -45,7 +46,7 @@ if (\is_readable(AIRSHIP_LOCAL_CONFIG."/config.json")) {
             ]
 
         ],
-        'vendors' => []
+        'suppliers' => []
     ];
 }
 if (!\extension_loaded('libsodium')) {
