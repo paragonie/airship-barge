@@ -37,29 +37,33 @@ class Cabin extends Proto\Init
         if (!\is_dir($basePath)) {
             \mkdir($basePath, 0755);
         }
-        \mkdir($basePath.'/'.$project_name, 0755);
-        \mkdir($basePath.'/'.$project_name.'/dist/', 0755);
-        \mkdir($basePath.'/'.$project_name.'/src/', 0755);
-
-        \mkdir($basePath.'/'.$project_name.'/src/Blueprint', 0755);
-        \mkdir($basePath.'/'.$project_name.'/src/Exceptions', 0755);
-        \mkdir($basePath.'/'.$project_name.'/src/Gadgets', 0755);
-        \mkdir($basePath.'/'.$project_name.'/src/Landing', 0755);
-        \mkdir($basePath.'/'.$project_name.'/src/Lens', 0755);
-        \mkdir($basePath.'/'.$project_name.'/src/Queries', 0755);
-        \mkdir($basePath.'/'.$project_name.'/src/public', 0755);
-        \mkdir($basePath.'/'.$project_name.'/src/Updates', 0755);
-
         // For lazy autoloading...
+        $mainDir = $this->upperFirst($supplier) . '__' .$this->upperFirst($project_name);
         $ns = \implode('\\', [
             'Airship',
             'Cabin',
-            $this->upperFirst($supplier) . '__' .$this->upperFirst($project_name)
+            $mainDir
         ]);
+        
+        \mkdir($basePath.'/'.$mainDir, 0755);
+        \mkdir($basePath.'/'.$mainDir.'/dist/', 0755);
+        \mkdir($basePath.'/'.$mainDir.'/src/', 0755);
+
+        \mkdir($basePath.'/'.$mainDir.'/src/Blueprint', 0755);
+        \mkdir($basePath.'/'.$mainDir.'/src/config', 0755);
+        \mkdir($basePath.'/'.$mainDir.'/src/config/editor_templates', 0755);
+        \mkdir($basePath.'/'.$mainDir.'/src/config/templates', 0755);
+        \mkdir($basePath.'/'.$mainDir.'/src/Exceptions', 0755);
+        \mkdir($basePath.'/'.$mainDir.'/src/Gadgets', 0755);
+        \mkdir($basePath.'/'.$mainDir.'/src/Landing', 0755);
+        \mkdir($basePath.'/'.$mainDir.'/src/Lens', 0755);
+        \mkdir($basePath.'/'.$mainDir.'/src/Queries', 0755);
+        \mkdir($basePath.'/'.$mainDir.'/src/public', 0755);
+        \mkdir($basePath.'/'.$mainDir.'/src/Updates', 0755);
 
         // Basic cabin.json
         \file_put_contents(
-            $basePath.'/'.$project_name.'/cabin.json',
+            $basePath.'/'.$mainDir.'/cabin.json',
             \json_encode(
                 [
                     'name' =>
@@ -83,7 +87,7 @@ class Cabin extends Proto\Init
 
         // Basic composer.json
         \file_put_contents(
-            $basePath.'/'.$project_name.'/composer.json',
+            $basePath.'/'.$mainDir.'/composer.json',
             \json_encode(
                 [
                     'name' => $supplier.'/'.$project_name,
@@ -96,9 +100,19 @@ class Cabin extends Proto\Init
             )
         );
 
+        // Configuration templates
+        \file_put_contents(
+            $basePath.'/'.$mainDir.'/src/config/editor_templates/cabin_config.twig',
+            '{# This affects the Cabin configuration screen on Bridge. #}'
+        );
+        \file_put_contents(
+            $basePath.'/'.$mainDir.'/src/config/templates/config.twig',
+            '{# This is used to update config/'.$mainDir.'/cabin.json #}'
+        );
+
         // Some example scripts
         \file_put_contents(
-            $basePath.'/'.$project_name.'/src/Blueprint/init_gear.php',
+            $basePath.'/'.$mainDir.'/src/Blueprint/init_gear.php',
             '<?php'."\n".
             'use \\Airship\\Engine\\Gears;'."\n".
             'namespace '.$ns.'\\Blueprint;'."\n\n".
@@ -107,7 +121,7 @@ class Cabin extends Proto\Init
             '}'."\n\n"
         );
         \file_put_contents(
-            $basePath.'/'.$project_name.'/src/Blueprint/Example.php',
+            $basePath.'/'.$mainDir.'/src/Blueprint/Example.php',
             '<?php'."\n".
             'namespace '.$ns.'\\Blueprint;'."\n\n".
             'require_once __DIR__."/init_gear.php";'."\n\n".
@@ -121,7 +135,7 @@ class Cabin extends Proto\Init
         );
         // Some example scripts
         \file_put_contents(
-            $basePath.'/'.$project_name.'/src/Landing/init_gear.php',
+            $basePath.'/'.$mainDir.'/src/Landing/init_gear.php',
             '<?php'."\n".
             'use \\Airship\\Engine\\Gears;'."\n".
             'namespace '.$ns.'\\Landing;'."\n\n".
@@ -130,7 +144,7 @@ class Cabin extends Proto\Init
             '}'."\n\n"
         );
         \file_put_contents(
-            $basePath.'/'.$project_name.'/src/Landing/Example.php',
+            $basePath.'/'.$mainDir.'/src/Landing/Example.php',
             '<?php'."\n".
             'namespace '.$ns.'\\Landing;'."\n\n".
             'require_once __DIR__."/init_gear.php";'."\n\n".
@@ -143,13 +157,13 @@ class Cabin extends Proto\Init
             '}'."\n\n"
         );
         \file_put_contents(
-            $basePath.'/'.$project_name.'/src/Lens/example.twig',
+            $basePath.'/'.$mainDir.'/src/Lens/example.twig',
             '{{ test }}'
         );
 
         // Example code for an automatic update trigger.
         \file_put_contents(
-            $basePath.'/'.$project_name.'/src/Updates/release-0-0-1.php',
+            $basePath.'/'.$mainDir.'/src/Updates/release-0-0-1.php',
             '<?php'."\n".
             '$db = \Airship\get_database();'."\n".
             '$db->insert("my_table", ['. "\n".
@@ -159,7 +173,7 @@ class Cabin extends Proto\Init
 
         // Auto-update trigger
         \file_put_contents(
-            $basePath.'/'.$project_name.'/src/update_trigger.php',
+            $basePath.'/'.$mainDir.'/src/update_trigger.php',
             '<?php' . "\n" .
             '$metadata = \Airship\loadJSON(\dirname(__DIR__) . "/cabin.json");'."\n".
             'if (\\Airship\\expand_version($previous_metadata[\'version\']) <= \\Airship\\expand_version(\'0.0.1\')) {'."\n".

@@ -35,6 +35,7 @@ define('CONFIGROOT', __DIR__.'/data/');
     // If the file exists, require it
     if (\file_exists($file)) {
         require $file;
+        return;
     }
 
     // Replace the namespace prefix with the base directory, replace namespace
