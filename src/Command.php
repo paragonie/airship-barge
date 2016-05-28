@@ -86,7 +86,7 @@ abstract class Command
      * @return string
      * @throws \Exception
      */
-    public static function getGitCommitHash(string $projectRoot): string
+    public function getGitCommitHash(string $projectRoot): string
     {
         if (!\is_dir($projectRoot . '/.git')) {
             return '';
