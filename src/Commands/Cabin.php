@@ -35,31 +35,31 @@ class Cabin extends Proto\Init
     ): bool {
         // Create the basic structure
         if (!\is_dir($basePath)) {
-            \mkdir($basePath, 0755);
+            \mkdir($basePath, 0775);
         }
         // For lazy autoloading...
-        $mainDir = $this->upperFirst($supplier) . '__' .$this->upperFirst($project_name);
+        $mainDir = $this->makeNamespace($supplier, $project_name);
         $ns = \implode('\\', [
             'Airship',
             'Cabin',
             $mainDir
         ]);
         
-        \mkdir($basePath.'/'.$mainDir, 0755);
-        \mkdir($basePath.'/'.$mainDir.'/dist/', 0755);
-        \mkdir($basePath.'/'.$mainDir.'/src/', 0755);
+        \mkdir($basePath.'/'.$mainDir, 0775);
+        \mkdir($basePath.'/'.$mainDir.'/dist/', 0775);
+        \mkdir($basePath.'/'.$mainDir.'/src/', 0775);
 
-        \mkdir($basePath.'/'.$mainDir.'/src/Blueprint', 0755);
-        \mkdir($basePath.'/'.$mainDir.'/src/config', 0755);
-        \mkdir($basePath.'/'.$mainDir.'/src/config/editor_templates', 0755);
-        \mkdir($basePath.'/'.$mainDir.'/src/config/templates', 0755);
-        \mkdir($basePath.'/'.$mainDir.'/src/Exceptions', 0755);
-        \mkdir($basePath.'/'.$mainDir.'/src/Gadgets', 0755);
-        \mkdir($basePath.'/'.$mainDir.'/src/Landing', 0755);
-        \mkdir($basePath.'/'.$mainDir.'/src/Lens', 0755);
-        \mkdir($basePath.'/'.$mainDir.'/src/Queries', 0755);
-        \mkdir($basePath.'/'.$mainDir.'/src/public', 0755);
-        \mkdir($basePath.'/'.$mainDir.'/src/Updates', 0755);
+        \mkdir($basePath.'/'.$mainDir.'/src/Blueprint', 0775);
+        \mkdir($basePath.'/'.$mainDir.'/src/config', 0777);
+        \mkdir($basePath.'/'.$mainDir.'/src/config/editor_templates', 0775);
+        \mkdir($basePath.'/'.$mainDir.'/src/config/templates', 0775);
+        \mkdir($basePath.'/'.$mainDir.'/src/Exceptions', 0775);
+        \mkdir($basePath.'/'.$mainDir.'/src/Gadgets', 0775);
+        \mkdir($basePath.'/'.$mainDir.'/src/Landing', 0775);
+        \mkdir($basePath.'/'.$mainDir.'/src/Lens', 0775);
+        \mkdir($basePath.'/'.$mainDir.'/src/Queries', 0775);
+        \mkdir($basePath.'/'.$mainDir.'/src/public', 0775);
+        \mkdir($basePath.'/'.$mainDir.'/src/Updates', 0775);
 
         // Basic cabin.json
         \file_put_contents(
@@ -114,8 +114,8 @@ class Cabin extends Proto\Init
         \file_put_contents(
             $basePath.'/'.$mainDir.'/src/Blueprint/init_gear.php',
             '<?php'."\n".
-            'use \\Airship\\Engine\\Gears;'."\n".
             'namespace '.$ns.'\\Blueprint;'."\n\n".
+            'use \\Airship\\Engine\\Gears;'."\n\n".
             'if (!\\class_exists(\'BlueprintGear\')) {'."\n".
             '    Gears::extract(\'Blueprint\', \'BlueprintGear\', __NAMESPACE__);'."\n".
             '}'."\n\n"
@@ -137,8 +137,8 @@ class Cabin extends Proto\Init
         \file_put_contents(
             $basePath.'/'.$mainDir.'/src/Landing/init_gear.php',
             '<?php'."\n".
-            'use \\Airship\\Engine\\Gears;'."\n".
             'namespace '.$ns.'\\Landing;'."\n\n".
+            'use \\Airship\\Engine\\Gears;'."\n\n".
             'if (!\\class_exists(\'LandingGear\')) {'."\n".
             '    Gears::extract(\'Landing\', \'LandingGear\', __NAMESPACE__);'."\n".
             '}'."\n\n"
@@ -152,7 +152,7 @@ class Cabin extends Proto\Init
             '{'."\n".
             '    public function index()'."\n".
             '    {'."\n".
-            '        $this->view("example", ["test" => "Hello world!"]);'."\n".
+            '        $this->lens("example", ["test" => "Hello world!"]);'."\n".
             '    }'."\n".
             '}'."\n\n"
         );
@@ -200,5 +200,33 @@ class Cabin extends Proto\Init
     protected function upperFirst(string $string = '')
     {
         return \trim(parent::upperFirst($string), '_');
+    }
+
+    /**
+     * some-test-user/cabin--for-the-win =>
+     * Some_Test_User__Cabin_For_The_Win
+     *
+     * @param string $supplier
+     * @param string $cabin
+     * @return string
+     */
+    protected function makeNamespace(string $supplier, string $cabin): string
+    {
+        $supplier = \preg_replace('/[^A-Za-z0-9_]/', '_', $supplier);
+        $exp = \explode('_', $supplier);
+        $supplier = \implode('_', \array_map('ucfirst', $exp));
+        $supplier = \preg_replace('/_{2,}/', '_', $supplier);
+
+        $cabin = \preg_replace('/[^A-Za-z0-9_]/', '_', $cabin);
+        $exp = \explode('_', $cabin);
+        $cabin = \implode('_', \array_map('ucfirst', $exp));
+        $cabin = \preg_replace('/_{2,}/', '_', $cabin);
+
+        return \implode('__',
+            [
+                \trim($supplier, '_'),
+                \trim($cabin, '_')
+            ]
+        );
     }
 }

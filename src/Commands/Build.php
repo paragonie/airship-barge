@@ -87,6 +87,8 @@ class Build extends Base\Command
     ) {
         // Step One -- Let's build our .phar file
         $pharName = $manifest['supplier'].'.'.$manifest['name'].'.phar';
+        $prevDir = \getcwd();
+        \chdir($path . '/src/');
         try {
             // Remove old src/manifest.json
             if (\file_exists($path.'/src/manifest.json')) {
@@ -116,11 +118,12 @@ class Build extends Base\Command
             echo 'Could not open .phar', "\n";
             exit(255); // Return an error flag
         }
-        $phar->buildFromDirectory($path);
+        $phar->buildFromDirectory('.');
         $phar->setStub(
             $phar->createDefaultStub('autoload.php', 'autoload.php')
         );
         $phar->setMetadata($manifest);
+        \chdir($prevDir);
         echo 'Cabin built.', "\n",
             $path.'/dist/'.$pharName, "\n",
         'Don\'t forget to sign it!', "\n";
