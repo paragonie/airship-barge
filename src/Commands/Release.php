@@ -118,6 +118,9 @@ class Release extends Base\Command
                 'token' => $this->getToken($manifest['supplier']),
                 'supplier' => $manifest['supplier'],
                 'package' => $manifest['name'],
+                'commit' => isset($manifest['commit'])
+                    ? $manifest['commit']
+                    : '',
                 'version' => isset($manifest['version'])
                     ? $manifest['version']
                     : '',
@@ -166,6 +169,9 @@ class Release extends Base\Command
                 'token' => $this->getToken($manifest['supplier']),
                 'supplier' => $manifest['supplier'],
                 'package' => $manifest['name'],
+                'commit' => isset($manifest['commit'])
+                    ? $manifest['commit']
+                    : '',
                 'version' => isset($manifest['version'])
                     ? $manifest['version']
                     : '',
@@ -215,6 +221,9 @@ class Release extends Base\Command
                 'token' => $this->getToken($manifest['supplier']),
                 'supplier' => $manifest['supplier'],
                 'package' => $manifest['name'],
+                'commit' => isset($manifest['commit'])
+                    ? $manifest['commit']
+                    : '',
                 'version' => isset($manifest['version'])
                     ? $manifest['version']
                     : '',
