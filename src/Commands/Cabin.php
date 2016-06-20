@@ -66,6 +66,8 @@ class Cabin extends Proto\Init
             $basePath.'/'.$mainDir.'/cabin.json',
             \json_encode(
                 [
+                    'airship_major_version' =>
+                        0,
                     'name' =>
                         $project_name,
                     'namespace' =>

@@ -47,6 +47,8 @@ class Motif extends Proto\Init
             $basePath.'/'.$project_name.'/src/motif.json',
             \json_encode(
                 [
+                    'airship_major_version' =>
+                        0,
                     'supplier' =>
                         $supplier,
                     'name' =>

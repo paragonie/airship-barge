@@ -51,6 +51,8 @@ class Gadget extends Proto\Init
             $basePath.'/'.$project_name.'/gadget.json',
             \json_encode(
                 [
+                    'airship_major_version' =>
+                        0,
                     'name' =>
                         $project_name,
                     'cabin' =>
