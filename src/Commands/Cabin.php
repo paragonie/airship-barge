@@ -166,11 +166,12 @@ class Cabin extends Proto\Init
         // Example code for an automatic update trigger.
         \file_put_contents(
             $basePath.'/'.$mainDir.'/src/Updates/release-0-0-1.php',
-            '<?php'."\n".
-            '$db = \Airship\get_database();'."\n".
-            '$db->insert("my_table", ['. "\n".
-            '    "column" => "value"'."\n".
-            '];'."\n\n"
+            '<?php' . "\n" .
+            'declare(strict_types=1);' . "\n\n" .
+            '$db = \Airship\get_database();' . "\n" .
+            '$db->insert("my_table", ['. "\n" .
+            '    "column" => "value"' . "\n" .
+            ']);' . "\n\n"
         );
 
         // Auto-update trigger
@@ -179,7 +180,7 @@ class Cabin extends Proto\Init
             '<?php' . "\n" .
             '$metadata = \Airship\loadJSON(\dirname(__DIR__) . "/cabin.json");'."\n".
             'if (\\Airship\\expand_version($previous_metadata[\'version\']) <= \\Airship\\expand_version(\'0.0.1\')) {'."\n".
-            '    require_once __DIR__."/Updates/release-0-0-1.php'."\n".
+            '    require_once __DIR__."/Updates/release-0-0-1.php";'."\n".
             '}'."\n\n"
         );
         return true;

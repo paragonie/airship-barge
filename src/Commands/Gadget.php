@@ -52,7 +52,7 @@ class Gadget extends Proto\Init
             \json_encode(
                 [
                     'airship_major_version' =>
-                        0,
+                        1,
                     'name' =>
                         $project_name,
                     'cabin' =>
@@ -165,7 +165,7 @@ class Gadget extends Proto\Init
             '$db = \Airship\get_database();'."\n".
             '$db->insert("my_table", ['. "\n".
             '    "column" => "value"'."\n".
-            '];'."\n\n"
+            ']);'."\n\n"
         );
 
         // Auto-update trigger
@@ -174,7 +174,7 @@ class Gadget extends Proto\Init
             '<?php' . "\n" .
             '$metadata = \Airship\loadJSON(\dirname(__DIR__) . "/gadget.json");'."\n".
             'if (\\Airship\\expand_version($previous_metadata[\'version\']) <= \\Airship\\expand_version(\'0.0.1\')) {'."\n".
-            '    require_once __DIR__."/Updates/release-0-0-1.php'."\n".
+            '    require_once __DIR__."/Updates/release-0-0-1.php";'."\n".
             '}'."\n\n"
         );
         return true;

@@ -48,7 +48,7 @@ class Motif extends Proto\Init
             \json_encode(
                 [
                     'airship_major_version' =>
-                        0,
+                        1,
                     'supplier' =>
                         $supplier,
                     'name' =>
