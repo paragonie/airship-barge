@@ -13,6 +13,9 @@ use \Airship\Barge as Base;
  */
 abstract class Init extends Base\Command
 {
+    /**
+     * @var string
+     */
     public $descriptionPrompt = 'Project description: ';
 
     /**

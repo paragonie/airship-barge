@@ -11,9 +11,24 @@ namespace Airship\Barge\Commands;
  */
 class Cabin extends Proto\Init
 {
+    /**
+     * @var bool
+     */
     public $essential = true;
+
+    /**
+     * @var string
+     */
     public $name = 'Cabin';
+
+    /**
+     * @var string
+     */
     public $description = 'Create a new Airship Cabin project.';
+
+    /**
+     * @var int
+     */
     public $display = 3;
 
     /**
@@ -72,6 +87,10 @@ class Cabin extends Proto\Init
                         $project_name,
                     'namespace' =>
                         $ns,
+                    'bundled-gadgets' =>
+                        [],
+                    'bundled-motifs' =>
+                        [],
                     'route_fallback' =>
                         null,
                     'description' =>

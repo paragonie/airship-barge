@@ -116,6 +116,9 @@ class Release extends Base\Command
             $publicKey,
             [
                 'token' => $this->getToken($manifest['supplier']),
+                'airship_major_version' => $manifest['airship_major_version'] ?? 0,
+                'bundled-gadgets' => $manifest['bundled-gadgets'] ?? [],
+                'bundled-motifs' => $manifest['bundled-motifs'] ?? [],
                 'supplier' => $manifest['supplier'],
                 'package' => $manifest['name'],
                 'commit' => isset($manifest['commit'])
@@ -167,6 +170,7 @@ class Release extends Base\Command
             $publicKey,
             [
                 'token' => $this->getToken($manifest['supplier']),
+                'airship_major_version' => $manifest['airship_major_version'] ?? 0,
                 'supplier' => $manifest['supplier'],
                 'package' => $manifest['name'],
                 'commit' => isset($manifest['commit'])
@@ -219,6 +223,8 @@ class Release extends Base\Command
             $publicKey,
             [
                 'token' => $this->getToken($manifest['supplier']),
+                'airship_major_version' => $manifest['airship_major_version'] ?? 0,
+                'cabin' => $manifest['cabin'] ?? null,
                 'supplier' => $manifest['supplier'],
                 'package' => $manifest['name'],
                 'commit' => isset($manifest['commit'])
